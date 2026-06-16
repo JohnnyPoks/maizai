@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -14,6 +14,10 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#3d8b5c",
+};
+
 export const metadata: Metadata = {
   title: {
     default: "MaizAI — Maize Disease Detection",
@@ -21,6 +25,7 @@ export const metadata: Metadata = {
   },
   description:
     "Mobile-first maize leaf disease detection system for Cameroonian smallholder farmers.",
+  manifest: "/manifest.json",
   openGraph: {
     title: "MaizAI",
     description:
@@ -37,6 +42,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         {children}
       </body>

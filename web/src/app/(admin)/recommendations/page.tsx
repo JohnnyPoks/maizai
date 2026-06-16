@@ -1,47 +1,33 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Topbar } from "@/components/admin/topbar";
-import { RecommendationCard } from "@/components/admin/recommendation-card";
-import { DiseaseClass } from "@prisma/client";
-
-const diseaseLabels: Record<DiseaseClass, string> = {
-  HEALTHY: "Healthy",
-  COMMON_RUST: "Common Rust",
-  GRAY_LEAF_SPOT: "Gray Leaf Spot",
-  BLIGHT: "Blight",
-};
+import { AdminTopbar } from "@/components/admin/admin-topbar";
+import { RecommendationsTable } from "@/components/admin/recommendations-table";
+import { EmptyState } from "@/components/admin/empty-state";
+import { Lightbulb } from "lucide-react";
 
 export default async function RecommendationsPage() {
-  const session = await auth();
   const recommendations = await db.recommendation.findMany({
     orderBy: { issuedAt: "desc" },
-    take: 50,
-    include: { classification: true },
+    take: 200,
+    include: {
+      classification: { select: { diseaseClass: true } },
+      reading: { select: { nodeId: true } },
+    },
   });
 
   return (
     <>
-      <Topbar
-        title="Recommendations"
-        userEmail={session?.user?.email ?? undefined}
-        userName={session?.user?.name ?? undefined}
-      />
-      <main className="flex-1 overflow-y-auto p-6 space-y-3">
+      <AdminTopbar title="Recommendations" />
+      <main className="flex-1 overflow-y-auto p-4 md:p-6">
         {recommendations.length === 0 ? (
-          <p className="text-sm text-earth-400">No recommendations issued yet.</p>
+          <EmptyState
+            icon={Lightbulb}
+            title="No recommendations yet"
+            description="Recommendations are generated automatically after each disease classification and linked sensor reading."
+          />
         ) : (
-          recommendations.map((r) => (
-            <RecommendationCard
-              key={r.id}
-              adviceType={r.adviceType}
-              adviceText={r.adviceText}
-              urgencyLevel={r.urgencyLevel}
-              issuedAt={r.issuedAt}
-              diseaseClass={diseaseLabels[r.classification.diseaseClass]}
-            />
-          ))
+          <RecommendationsTable data={recommendations} />
         )}
       </main>
     </>

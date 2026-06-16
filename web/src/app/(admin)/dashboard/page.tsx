@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Topbar } from "@/components/admin/topbar";
+import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { StatCard } from "@/components/admin/stat-card";
 import { RecommendationCard } from "@/components/admin/recommendation-card";
 import { SensorChart } from "@/components/admin/sensor-chart";
@@ -21,7 +20,6 @@ const diseaseLabels: Record<DiseaseClass, string> = {
 };
 
 export default async function DashboardPage() {
-  const session = await auth();
   const now = new Date();
   const yesterday = subDays(now, 1);
   const twentyFourHoursAgo = subHours(now, 24);
@@ -62,11 +60,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <Topbar
-        title="Dashboard"
-        userEmail={session?.user?.email ?? undefined}
-        userName={session?.user?.name ?? undefined}
-      />
+      <AdminTopbar title="Dashboard" />
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Stat cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

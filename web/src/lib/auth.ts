@@ -18,16 +18,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await db.user.findUnique({
           where: { email: parsed.data.email },
         });
-        if (!user) return null;
+        if (!user || user.disabled) return null;
 
         const passwordMatch = await bcrypt.compare(parsed.data.password, user.passwordHash);
         if (!passwordMatch) return null;
+
+        await db.user.update({
+          where: { id: user.id },
+          data: { lastSignInAt: new Date() },
+        });
 
         return {
           id: user.id,
           email: user.email,
           name: user.fullName,
           role: user.role,
+          mustChangePassword: user.mustChangePassword,
         };
       },
     }),
@@ -36,14 +42,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as unknown as { role: string }).role;
+        const u = user as unknown as { role: string; mustChangePassword: boolean };
+        token.role = u.role;
+        token.mustChangePassword = u.mustChangePassword;
       }
       return token;
     },
     session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        (session.user as unknown as { role: string }).role = token.role as string;
+        const u = session.user as unknown as { role: string; mustChangePassword: boolean };
+        u.role = token.role as string;
+        u.mustChangePassword = token.mustChangePassword as boolean;
       }
       return session;
     },

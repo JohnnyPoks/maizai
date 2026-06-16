@@ -8,12 +8,12 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "admin@maizai.cm" },
-    update: {},
+    update: { role: Role.SUPER_ADMIN },
     create: {
       email: "admin@maizai.cm",
       passwordHash,
       fullName: "MaizAI Administrator",
-      role: Role.ADMIN,
+      role: Role.SUPER_ADMIN,
     },
   });
 
@@ -80,11 +80,15 @@ async function main() {
     },
   ];
 
-  for (const t of thresholds) {
-    await prisma.ruleThreshold.create({ data: t });
+  // Only seed thresholds if none exist
+  const existingCount = await prisma.ruleThreshold.count();
+  if (existingCount === 0) {
+    for (const t of thresholds) {
+      await prisma.ruleThreshold.create({ data: t });
+    }
   }
 
-  console.log("Seed complete — admin user and 6 rule thresholds created.");
+  console.log("Seed complete — Super-Admin user and 6 rule thresholds ready.");
 }
 
 main()
