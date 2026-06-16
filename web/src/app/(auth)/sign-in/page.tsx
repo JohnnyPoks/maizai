@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Copy, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { Loader2, Copy, CheckCircle2, Clock, XCircle, ArrowLeft } from "lucide-react";
 
 type Step =
   | { name: "email" }
@@ -130,6 +130,9 @@ export default function SignInPage() {
             <Button variant="outline" className="w-full" onClick={resetToEmail}>
               Try a different email
             </Button>
+            <Link href="/" className="inline-flex items-center gap-1 text-xs text-earth-400 hover:text-brand-600">
+              <ArrowLeft size={12} /> Back to home
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -157,6 +160,9 @@ export default function SignInPage() {
                 Submit a new request
               </Button>
             </Link>
+            <Link href="/" className="inline-flex items-center gap-1 text-xs text-earth-400 hover:text-brand-600">
+              <ArrowLeft size={12} /> Back to home
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -181,6 +187,9 @@ export default function SignInPage() {
             <Button variant="ghost" className="w-full" onClick={resetToEmail}>
               Try a different email
             </Button>
+            <Link href="/" className="inline-flex items-center gap-1 text-xs text-earth-400 hover:text-brand-600">
+              <ArrowLeft size={12} /> Back to home
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -255,6 +264,14 @@ export default function SignInPage() {
           </div>
           <CardTitle className="text-xl">Sign in to your account</CardTitle>
           <CardDescription>Administrator access only</CardDescription>
+          <div className="flex justify-center gap-4 pt-1">
+            <Link href="/" className="inline-flex items-center gap-1 text-xs text-earth-400 hover:text-brand-600">
+              <ArrowLeft size={12} /> Home
+            </Link>
+            <Link href="/request-access" className="text-xs text-brand-600 hover:underline">
+              Request access
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {step.name === "email" ? (
