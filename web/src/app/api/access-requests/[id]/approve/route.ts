@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { approveAccessRequestSchema } from "@/lib/schemas";
-import { notifyRequesterApproved } from "@/lib/email";
 import { Role } from "@prisma/client";
-import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -42,43 +40,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const tempPassword = randomBytes(8).toString("hex");
-  const passwordHash = await bcrypt.hash(tempPassword, 12);
 
-  const [, updatedRequest] = await db.$transaction([
-    db.user.upsert({
-      where: { email: request.email },
-      update: {
-        fullName: request.fullName,
-        role: parsed.data.approvedRole,
-        passwordHash,
-        mustChangePassword: true,
-        disabled: false,
-      },
-      create: {
-        email: request.email,
-        fullName: request.fullName,
-        role: parsed.data.approvedRole,
-        passwordHash,
-        mustChangePassword: true,
-      },
-    }),
-    db.accessRequest.update({
-      where: { id },
-      data: {
-        status: "APPROVED",
-        reviewedAt: new Date(),
-        reviewedBy: session.user.id,
-        notes: parsed.data.notes,
-        approvedRole: parsed.data.approvedRole,
-      },
-    }),
-  ]);
+  const updated = await db.accessRequest.update({
+    where: { id },
+    data: {
+      status: "APPROVED",
+      reviewedAt: new Date(),
+      reviewedBy: session.user.id,
+      notes: parsed.data.notes,
+      approvedRole: parsed.data.approvedRole,
+      tempPassword,
+    },
+  });
 
-  await notifyRequesterApproved({
-    fullName: request.fullName,
-    email: request.email,
-    tempPassword,
-  }).catch(console.error);
-
-  return NextResponse.json({ id: updatedRequest.id, status: "APPROVED" });
+  return NextResponse.json({ id: updated.id, status: "APPROVED" });
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { accessRequestSchema, accessRequestListSchema } from "@/lib/schemas";
-import { notifyRequesterReceived, notifySuperAdminOfAccessRequest } from "@/lib/email";
+import { notifySuperAdminOfAccessRequest } from "@/lib/email";
 import { Role } from "@prisma/client";
 
 export async function POST(req: NextRequest) {
@@ -31,10 +31,13 @@ export async function POST(req: NextRequest) {
     data: { fullName, email, affiliation, reason },
   });
 
-  await Promise.allSettled([
-    notifyRequesterReceived({ fullName, email }),
-    notifySuperAdminOfAccessRequest({ fullName, email, affiliation: affiliation ?? null, reason, id: request.id }),
-  ]);
+  await notifySuperAdminOfAccessRequest({
+    fullName,
+    email,
+    affiliation: affiliation ?? null,
+    reason,
+    id: request.id,
+  }).catch(console.error);
 
   return NextResponse.json({ id: request.id }, { status: 201 });
 }

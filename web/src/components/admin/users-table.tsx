@@ -39,8 +39,12 @@ export function UsersTable({ data }: { data: UserRow[] }) {
   const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
 
   async function resetPassword(id: string) {
-    if (!confirm("Reset this user's password? They will receive an email with a temporary password.")) return;
-    await fetch(`/api/users/${id}/reset-password`, { method: "POST" });
+    if (!confirm("Reset this user's password? A temporary password will be generated for you to share with them.")) return;
+    const res = await fetch(`/api/users/${id}/reset-password`, { method: "POST" });
+    if (res.ok) {
+      const { tempPassword } = await res.json() as { tempPassword: string };
+      alert(`Password reset. Temporary password:\n\n${tempPassword}\n\nShare this with the user. They will be required to change it on next sign-in.`);
+    }
     router.refresh();
   }
 

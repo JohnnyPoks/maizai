@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { denyAccessRequestSchema } from "@/lib/schemas";
-import { notifyRequesterDenied } from "@/lib/email";
 import { Role } from "@prisma/client";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -48,12 +47,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       notes: parsed.data.notes,
     },
   });
-
-  await notifyRequesterDenied({
-    fullName: request.fullName,
-    email: request.email,
-    notes: parsed.data.notes,
-  }).catch(console.error);
 
   return NextResponse.json({ id: updated.id, status: "DENIED" });
 }

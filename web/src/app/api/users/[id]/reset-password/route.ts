@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { notifyRequesterApproved } from "@/lib/email";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
@@ -33,11 +32,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     data: { passwordHash, mustChangePassword: true },
   });
 
-  await notifyRequesterApproved({
-    fullName: user.fullName,
-    email: user.email,
-    tempPassword,
-  }).catch(console.error);
-
-  return NextResponse.json({ success: true });
+  // Return the temp password so the admin can relay it to the user directly.
+  return NextResponse.json({ success: true, tempPassword });
 }

@@ -149,6 +149,7 @@ model AccessRequest {
   reviewedBy   String?
   notes        String?             @db.Text
   approvedRole Role?
+  tempPassword String?
 
   @@index([status, requestedAt])
 }
