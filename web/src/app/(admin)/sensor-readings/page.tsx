@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { SensorReadingsTable } from "@/components/admin/sensor-readings-table";
 import { EmptyState } from "@/components/admin/empty-state";
@@ -10,6 +11,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { subHours } from "date-fns";
 
 export default async function SensorReadingsPage() {
+  const session = await auth();
+  const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
   const [readings, chartReadings] = await Promise.all([
     db.sensorReading.findMany({ orderBy: { recordedAt: "desc" }, take: 200 }),
     db.sensorReading.findMany({
@@ -40,7 +43,7 @@ export default async function SensorReadingsPage() {
             description="Readings will appear here once the ESP32 sensor node begins transmitting data."
           />
         ) : (
-          <SensorReadingsTable data={readings} />
+          <SensorReadingsTable data={readings} isSuperAdmin={isSuperAdmin} />
         )}
       </main>
     </>

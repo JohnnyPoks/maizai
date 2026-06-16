@@ -8,7 +8,6 @@ import { format, formatDistanceToNow } from "date-fns";
 import { DiseaseClass, SyncStatus } from "@prisma/client";
 import { Trash2, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 
 type LeafImageRow = {
@@ -44,10 +43,8 @@ const syncBadge: Record<SyncStatus, string> = {
   FAILED: "text-alert-high border-alert-high",
 };
 
-export function LeafImagesTable({ data }: { data: LeafImageRow[] }) {
+export function LeafImagesTable({ data, isSuperAdmin }: { data: LeafImageRow[]; isSuperAdmin: boolean }) {
   const router = useRouter();
-  const { data: session } = useSession();
-  const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
 
   async function deleteImage(id: string) {
     if (!confirm("Delete this leaf image and its Cloudinary record? This cannot be undone.")) return;

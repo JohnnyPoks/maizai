@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import { Role } from "@prisma/client";
 import { Trash2, RotateCcw, Ban, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 type UserRow = {
   id: string;
@@ -33,10 +32,8 @@ const roleLabel: Record<Role, string> = {
   FARMER: "Farmer",
 };
 
-export function UsersTable({ data }: { data: UserRow[] }) {
+export function UsersTable({ data, isSuperAdmin }: { data: UserRow[]; isSuperAdmin: boolean }) {
   const router = useRouter();
-  const { data: session } = useSession();
-  const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
 
   async function resetPassword(id: string) {
     if (!confirm("Reset this user's password? A temporary password will be generated for you to share with them.")) return;

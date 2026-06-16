@@ -1,12 +1,15 @@
 export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { LeafImagesTable } from "@/components/admin/leaf-images-table";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Image } from "lucide-react";
 
 export default async function LeafImagesPage() {
+  const session = await auth();
+  const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
   const images = await db.leafImage.findMany({
     orderBy: { uploadedAt: "desc" },
     take: 200,
@@ -28,7 +31,7 @@ export default async function LeafImagesPage() {
             action={{ label: "View the mobile app", href: "/#download" }}
           />
         ) : (
-          <LeafImagesTable data={images} />
+          <LeafImagesTable data={images} isSuperAdmin={isSuperAdmin} />
         )}
       </main>
     </>

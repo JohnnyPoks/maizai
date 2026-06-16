@@ -1,12 +1,16 @@
 export const dynamic = "force-dynamic";
 
 import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
 import { AdminTopbar } from "@/components/admin/admin-topbar";
 import { UsersTable } from "@/components/admin/users-table";
 import { EmptyState } from "@/components/admin/empty-state";
 import { Users } from "lucide-react";
 
 export default async function UsersPage() {
+  const session = await auth();
+  const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
+
   const users = await db.user.findMany({
     orderBy: { createdAt: "desc" },
     select: {
@@ -32,7 +36,7 @@ export default async function UsersPage() {
             description="Users will appear here after access requests are approved or when created directly."
           />
         ) : (
-          <UsersTable data={users} />
+          <UsersTable data={users} isSuperAdmin={isSuperAdmin} />
         )}
       </main>
     </>

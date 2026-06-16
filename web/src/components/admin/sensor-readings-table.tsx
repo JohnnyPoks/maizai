@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow, differenceInMinutes } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 type SensorReadingRow = {
@@ -19,10 +18,8 @@ type SensorReadingRow = {
   receivedAt: Date;
 };
 
-export function SensorReadingsTable({ data }: { data: SensorReadingRow[] }) {
+export function SensorReadingsTable({ data, isSuperAdmin }: { data: SensorReadingRow[]; isSuperAdmin: boolean }) {
   const router = useRouter();
-  const { data: session } = useSession();
-  const isSuperAdmin = (session?.user as unknown as { role?: string })?.role === "SUPER_ADMIN";
 
   async function deleteReading(id: string) {
     if (!confirm("Delete this sensor reading?")) return;
