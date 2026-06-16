@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  FARMER
+  ADMIN
+}
+
+enum DiseaseClass {
+  HEALTHY
+  COMMON_RUST
+  GRAY_LEAF_SPOT
+  BLIGHT
+}
+
+enum InferenceSource {
+  ON_DEVICE
+  CLOUD
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  fullName     String
+  role         Role        @default(FARMER)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  leafImages   LeafImage[]
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model LeafImage {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  cloudinaryUrl  String
+  cloudinaryId   String
+  capturedAt     DateTime
+  gpsLatitude    Float?
+  gpsLongitude   Float?
+  syncStatus     SyncStatus      @default(SYNCED)
+  uploadedAt     DateTime        @default(now())
+
+  classification Classification?
+}
+
+model Classification {
+  id              String          @id @default(cuid())
+  imageId         String          @unique
+  image           LeafImage       @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  diseaseClass    DiseaseClass
+  confidence      Float
+  inferenceSource InferenceSource @default(ON_DEVICE)
+  classifiedAt    DateTime
+  createdAt       DateTime        @default(now())
+
+  recommendations Recommendation[]
+}
+
+model SensorReading {
+  id                 String           @id @default(cuid())
+  nodeId             String
+  soilMoisture       Float
+  ambientTemperature Float
+  relativeHumidity   Float
+  recordedAt         DateTime
+  receivedAt         DateTime         @default(now())
+
+  recommendations Recommendation[]
+
+  @@index([nodeId, recordedAt])
+}
+
+model Recommendation {
+  id               String        @id @default(cuid())
+  classificationId String
+  classification   Classification @relation(fields: [classificationId], references: [id])
+  readingId        String?
+  reading          SensorReading? @relation(fields: [readingId], references: [id])
+  adviceType       String
+  adviceText       String
+  urgencyLevel     UrgencyLevel
+  issuedAt         DateTime      @default(now())
+}
+
+model RuleThreshold {
+  id           String       @id @default(cuid())
+  diseaseClass DiseaseClass
+  parameter    String
+  minValue     Float?
+  maxValue     Float?
+  urgencyLevel UrgencyLevel
+  adviceType   String
+  adviceText   String
+  active       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
