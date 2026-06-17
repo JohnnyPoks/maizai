@@ -42,12 +42,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         const u = user as unknown as { role: string; mustChangePassword: boolean };
         token.role = u.role;
         token.mustChangePassword = u.mustChangePassword;
+      }
+      // Allow the change-password page to patch the token immediately after the
+      // forced password change, so AdminLayout no longer redirects back.
+      if (trigger === "update") {
+        const patch = session as Record<string, unknown> | null;
+        if (patch?.mustChangePassword !== undefined) {
+          token.mustChangePassword = patch.mustChangePassword as boolean;
+        }
       }
       return token;
     },

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,18 +20,31 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.AUTH_URL ?? process.env.NEXTAUTH_URL ?? "https://maizai.vercel.app"
+  ),
   title: {
     default: "MaizAI — Maize Disease Detection",
     template: "%s | MaizAI",
   },
   description:
-    "Mobile-first maize leaf disease detection system for Cameroonian smallholder farmers.",
+    "Mobile-first maize leaf disease detection system for Cameroonian smallholder farmers. Detect Common Rust, Gray Leaf Spot, and Blight — offline, in seconds.",
+  keywords: ["maize disease", "crop detection", "AI agriculture", "Cameroon", "smallholder farmers", "TFLite", "offline AI"],
+  authors: [{ name: "MaizAI" }],
   manifest: "/manifest.json",
   openGraph: {
-    title: "MaizAI",
+    title: "MaizAI — Maize Disease Detection",
     description:
-      "Smart maize disease detection, built for Cameroonian farmers.",
+      "Detect maize leaf disease before it spreads. On-device AI built for Cameroonian smallholder farmers.",
     type: "website",
+    url: "/",
+    siteName: "MaizAI",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "MaizAI — Maize Disease Detection" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MaizAI — Maize Disease Detection",
+    description: "On-device AI for maize disease detection. Built for Cameroonian smallholder farmers.",
     images: ["/og-image.png"],
   },
 };
@@ -50,7 +64,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
