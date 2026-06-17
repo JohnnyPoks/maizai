@@ -7,6 +7,7 @@ import { loginSchema } from "@/lib/schemas";
 import type { NextRequest } from "next/server";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: {
     signIn: "/sign-in",
