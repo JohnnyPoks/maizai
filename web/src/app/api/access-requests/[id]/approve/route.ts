@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { approveAccessRequestSchema } from "@/lib/schemas";
 import { Role } from "@prisma/client";
 import { randomBytes } from "crypto";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  const role = (session?.user as unknown as { role?: string } | null)?.role;
-  if (!session?.user || role !== Role.SUPER_ADMIN) {
+  const user = await getAuthenticatedUser(req);
+  if (!user || user.role !== Role.SUPER_ADMIN) {
     return NextResponse.json(
       { error: { code: "FORBIDDEN", message: "Super-Admin access required." } },
-      { status: 403 }
+      { status: user ? 403 : 401 }
     );
   }
 
@@ -46,7 +45,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     data: {
       status: "APPROVED",
       reviewedAt: new Date(),
-      reviewedBy: session.user.id,
+      reviewedBy: user.id,
       notes: parsed.data.notes,
       approvedRole: parsed.data.approvedRole,
       tempPassword,

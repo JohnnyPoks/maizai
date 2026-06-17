@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { createUserSchema, userListSchema } from "@/lib/schemas";
 import { Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  const role = (session?.user as unknown as { role?: string } | null)?.role;
-  if (!session?.user || role !== Role.SUPER_ADMIN) {
+  const user = await getAuthenticatedUser(req);
+  if (!user || user.role !== Role.SUPER_ADMIN) {
     return NextResponse.json(
       { error: { code: "FORBIDDEN", message: "Super-Admin access required." } },
-      { status: 403 }
+      { status: user ? 403 : 401 }
     );
   }
 
@@ -65,12 +64,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const role = (session?.user as unknown as { role?: string } | null)?.role;
-  if (!session?.user || role !== Role.SUPER_ADMIN) {
+  const user = await getAuthenticatedUser(req);
+  if (!user || user.role !== Role.SUPER_ADMIN) {
     return NextResponse.json(
       { error: { code: "FORBIDDEN", message: "Super-Admin access required." } },
-      { status: 403 }
+      { status: user ? 403 : 401 }
     );
   }
 
@@ -92,7 +90,7 @@ export async function POST(req: NextRequest) {
   }
 
   const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-  const user = await db.user.create({
+  const newUser = await db.user.create({
     data: {
       email: parsed.data.email,
       fullName: parsed.data.fullName,
@@ -102,5 +100,5 @@ export async function POST(req: NextRequest) {
     select: { id: true, email: true, fullName: true, role: true, createdAt: true },
   });
 
-  return NextResponse.json(user, { status: 201 });
+  return NextResponse.json(newUser, { status: 201 });
 }

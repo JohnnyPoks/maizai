@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { accessRequestSchema, accessRequestListSchema } from "@/lib/schemas";
 import { notifySuperAdminOfAccessRequest } from "@/lib/email";
 import { Role } from "@prisma/client";
@@ -43,12 +43,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  const role = (session?.user as unknown as { role?: string } | null)?.role;
-  if (!session?.user || role !== Role.SUPER_ADMIN) {
+  const user = await getAuthenticatedUser(req);
+  if (!user || user.role !== Role.SUPER_ADMIN) {
     return NextResponse.json(
       { error: { code: "FORBIDDEN", message: "Super-Admin access required." } },
-      { status: 403 }
+      { status: user ? 403 : 401 }
     );
   }
 

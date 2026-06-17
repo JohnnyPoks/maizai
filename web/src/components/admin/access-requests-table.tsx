@@ -100,7 +100,8 @@ function ApproveDialog({ id, fullName, onDone }: { id: string; fullName: string;
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-earth-600">
-              Approving access for <b>{fullName}</b>. A user account will be created and a temporary password emailed to them.
+              Approving access for <b>{fullName}</b>. A temporary password will be generated and
+              displayed to them the next time they visit the sign-in page.
             </p>
             <div className="space-y-1">
               <Label>Role to grant</Label>

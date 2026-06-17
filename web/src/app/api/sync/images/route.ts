@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { uploadLeafImage } from "@/lib/cloudinary";
 import { syncImageSchema } from "@/lib/schemas";
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(req);
+    if (!user) {
       return NextResponse.json(
         { error: { code: "UNAUTHORIZED", message: "Authentication required." } },
         { status: 401 }
@@ -23,11 +23,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { url, publicId } = await uploadLeafImage(parsed.data.base64Image, session.user.id);
+    const { url, publicId } = await uploadLeafImage(parsed.data.base64Image, user.id);
 
     const image = await db.leafImage.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         cloudinaryUrl: url,
         cloudinaryId: publicId,
         capturedAt: new Date(parsed.data.capturedAt),

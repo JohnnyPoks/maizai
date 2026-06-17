@@ -1,8 +1,10 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { encode, decode } from "next-auth/jwt";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { loginSchema } from "@/lib/schemas";
+import type { NextRequest } from "next/server";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -59,3 +61,82 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+// ── Mobile JWT helpers ────────────────────────────────────────────────────────
+
+export type AuthUser = {
+  id: string;
+  email: string;
+  role: string;
+  mustChangePassword: boolean;
+};
+
+// Distinct salt so mobile tokens are never confused with web session cookies.
+const MOBILE_SALT = "authjs.mobile-token";
+const MOBILE_TOKEN_TTL = 30 * 24 * 60 * 60; // 30 days in seconds
+
+export async function encodeMobileToken(payload: {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  mustChangePassword: boolean;
+}): Promise<string> {
+  return encode({
+    token: {
+      sub: payload.id,
+      email: payload.email,
+      name: payload.name,
+      role: payload.role,
+      mustChangePassword: payload.mustChangePassword,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + MOBILE_TOKEN_TTL,
+    },
+    secret: process.env.NEXTAUTH_SECRET!,
+    salt: MOBILE_SALT,
+  });
+}
+
+/**
+ * Resolves the caller identity from either:
+ *   - Authorization: Bearer <mobile-jwt>  (React Native app)
+ *   - NextAuth session cookie             (web browser)
+ *
+ * Returns null when the request is unauthenticated or the token is invalid.
+ * When a Bearer header is present but invalid, never falls through to cookies.
+ */
+export async function getAuthenticatedUser(req: NextRequest): Promise<AuthUser | null> {
+  const authHeader = req.headers.get("authorization");
+
+  if (authHeader?.startsWith("Bearer ")) {
+    try {
+      const payload = await decode({
+        token: authHeader.slice(7),
+        secret: process.env.NEXTAUTH_SECRET!,
+        salt: MOBILE_SALT,
+      });
+      if (payload?.sub && payload.role) {
+        return {
+          id: payload.sub,
+          email: (payload.email as string | undefined) ?? "",
+          role: payload.role as string,
+          mustChangePassword: (payload.mustChangePassword as boolean | undefined) ?? false,
+        };
+      }
+    } catch {
+      // Token present but invalid/expired — reject immediately.
+    }
+    return null;
+  }
+
+  // Fall back to NextAuth session cookie (web dashboard).
+  const session = await auth();
+  if (!session?.user?.id) return null;
+  const u = session.user as unknown as { role?: string; mustChangePassword?: boolean };
+  return {
+    id: session.user.id,
+    email: session.user.email ?? "",
+    role: u.role ?? "",
+    mustChangePassword: u.mustChangePassword ?? false,
+  };
+}

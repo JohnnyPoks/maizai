@@ -61,7 +61,7 @@ export default async function DashboardPage() {
   return (
     <>
       <AdminTopbar title="Dashboard" />
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+      <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
         {/* Stat cards */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard

@@ -5,6 +5,7 @@ interface LogoProps {
   className?: string;
   showText?: boolean;
   size?: "sm" | "md" | "lg";
+  variant?: "default" | "white";
 }
 
 const sizeMap = {
@@ -13,13 +14,16 @@ const sizeMap = {
   lg: { icon: 28, text: "text-2xl" },
 };
 
-export function Logo({ className, showText = true, size = "md" }: LogoProps) {
+export function Logo({ className, showText = true, size = "md", variant = "default" }: LogoProps) {
   const s = sizeMap[size];
+  const white = variant === "white";
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <Wheat size={s.icon} className="text-brand-500" />
+      <Wheat size={s.icon} className={white ? "text-white" : "text-brand-500"} />
       {showText && (
-        <span className={cn("font-bold tracking-tight text-brand-800", s.text)}>MaizAI</span>
+        <span className={cn("font-bold tracking-tight", s.text, white ? "text-white" : "text-brand-800")}>
+          MaizAI
+        </span>
       )}
     </div>
   );

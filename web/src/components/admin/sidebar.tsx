@@ -73,15 +73,8 @@ function NavLinks({ collapsed, role, onClose }: { collapsed: boolean; role: stri
   );
 }
 
-interface SidebarProps {
-  role: string;
-  mobileOpen?: boolean;
-  onMobileClose?: () => void;
-}
-
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role }: { role: string }) {
   const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("maizai.sidebar.collapsed");
@@ -97,40 +90,27 @@ export function Sidebar({ role }: SidebarProps) {
   }
 
   return (
-    <>
-      {/* Desktop sidebar */}
-      <aside
-        className={cn(
-          "hidden md:flex h-screen shrink-0 flex-col border-r border-brand-100 bg-white transition-all duration-200",
-          collapsed ? "w-16" : "w-56"
-        )}
-      >
-        <div className="flex h-14 items-center border-b border-brand-100 px-3 justify-between">
-          {!collapsed && <Logo size="sm" />}
-          <button
-            onClick={toggleCollapse}
-            className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-md text-earth-400 hover:bg-brand-50 hover:text-brand-600 transition-colors",
-              collapsed && "mx-auto"
-            )}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-          </button>
-        </div>
-        <NavLinks collapsed={collapsed} role={role} />
-      </aside>
-
-      {/* Mobile drawer trigger — exposed via context/prop */}
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-56 p-0 border-r border-brand-100">
-          <div className="flex h-14 items-center border-b border-brand-100 px-4">
-            <Logo size="sm" />
-          </div>
-          <NavLinks collapsed={false} role={role} onClose={() => setMobileOpen(false)} />
-        </SheetContent>
-      </Sheet>
-    </>
+    <aside
+      className={cn(
+        "hidden md:flex h-screen shrink-0 flex-col border-r border-brand-100 bg-white transition-all duration-200",
+        collapsed ? "w-16" : "w-56"
+      )}
+    >
+      <div className="flex h-14 items-center border-b border-brand-100 px-3 justify-between">
+        {!collapsed && <Logo size="sm" />}
+        <button
+          onClick={toggleCollapse}
+          className={cn(
+            "flex h-7 w-7 items-center justify-center rounded-md text-earth-400 hover:bg-brand-50 hover:text-brand-600 transition-colors",
+            collapsed && "mx-auto"
+          )}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+      </div>
+      <NavLinks collapsed={collapsed} role={role} />
+    </aside>
   );
 }
 

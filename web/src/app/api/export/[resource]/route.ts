@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ resource: string }> }) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getAuthenticatedUser(req);
+  if (!user) {
     return NextResponse.json(
       { error: { code: "UNAUTHORIZED", message: "Authentication required." } },
       { status: 401 }
