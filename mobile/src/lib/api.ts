@@ -1,0 +1,64 @@
+import axios from "axios";
+import Constants from "expo-constants";
+import { getToken } from "./auth";
+import type {
+  MobileSignInRequest,
+  MobileSignInResponse,
+  SyncImageRequest,
+  SyncImageResponse,
+  SyncClassificationRequest,
+  SyncClassificationResponse,
+  ApiRuleThreshold,
+  AccessRequestBody,
+} from "@/types/api";
+
+const BASE_URL = (Constants.expoConfig?.extra as Record<string, string> | undefined)?.apiUrl
+  ?? process.env.EXPO_PUBLIC_API_URL
+  ?? "http://10.0.2.2:3000";
+
+const client = axios.create({ baseURL: BASE_URL, timeout: 15_000 });
+
+// Attach Bearer token to every request when available
+client.interceptors.request.use(async (config) => {
+  const token = await getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const api = {
+  async signIn(body: MobileSignInRequest): Promise<MobileSignInResponse> {
+    const { data } = await client.post<MobileSignInResponse>("/api/auth/mobile-signin", body);
+    return data;
+  },
+
+  async requestAccess(body: AccessRequestBody): Promise<{ id: string }> {
+    const { data } = await client.post<{ id: string }>("/api/access-requests", body);
+    return data;
+  },
+
+  async changePassword(newPassword: string): Promise<void> {
+    await client.post("/api/users/me/password", { newPassword });
+  },
+
+  async syncImage(body: SyncImageRequest): Promise<SyncImageResponse> {
+    const { data } = await client.post<SyncImageResponse>("/api/sync/images", body);
+    return data;
+  },
+
+  async syncClassification(body: SyncClassificationRequest): Promise<SyncClassificationResponse> {
+    const { data } = await client.post<SyncClassificationResponse>("/api/sync/classifications", body);
+    return data;
+  },
+
+  async fetchThresholds(): Promise<ApiRuleThreshold[]> {
+    const { data } = await client.get<ApiRuleThreshold[]>("/api/thresholds");
+    return data;
+  },
+
+  async getMe(): Promise<{ id: string; email: string; fullName: string; role: string }> {
+    const { data } = await client.get("/api/users/me");
+    return data;
+  },
+};

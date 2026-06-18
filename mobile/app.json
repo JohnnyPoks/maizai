@@ -1,0 +1,65 @@
+{
+  "expo": {
+    "name": "MaizAI",
+    "slug": "maizai",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "maizai",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f0f9f2"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundColor": "#3d8b5c"
+      },
+      "package": "cm.maizai.app",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "cm.maizai.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "MaizAI uses your camera to capture maize leaf images for disease classification.",
+        "NSPhotoLibraryUsageDescription": "MaizAI saves captured leaf images to your photo library."
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "MaizAI uses your camera to capture maize leaf images for disease classification."
+        }
+      ],
+      [
+        "react-native-fast-tflite",
+        {
+          "enableCoreMLDelegate": false,
+          "enableAndroidGpuLibraries": ["libOpenCL.so", "libOpenCL-pixel.so"]
+        }
+      ]
+    ],
+    "extra": {
+      "router": { "origin": false },
+      "eas": { "projectId": "to-be-set-on-first-eas-build" }
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

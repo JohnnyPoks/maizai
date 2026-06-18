@@ -1,0 +1,23 @@
+# Expo
+.expo/
+dist/
+web-build/
+android/
+ios/
+
+# Env
+.env.local
+.env.*.local
+
+# Build output (APKs uploaded to GitHub Releases separately)
+build-output/*.apk
+
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo

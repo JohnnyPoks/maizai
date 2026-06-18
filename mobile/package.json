@@ -1,0 +1,51 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@react-native-async-storage/async-storage": "^3.1.1",
+    "@react-native-community/netinfo": "^12.0.1",
+    "@tanstack/react-query": "^5.101.0",
+    "axios": "^1.18.0",
+    "expo": "~56.0.12",
+    "expo-camera": "^56.0.8",
+    "expo-constants": "^56.0.18",
+    "expo-crypto": "^56.0.4",
+    "expo-file-system": "^56.0.8",
+    "expo-haptics": "^56.0.3",
+    "expo-image": "^56.0.11",
+    "expo-image-manipulator": "^56.0.19",
+    "expo-image-picker": "^56.0.18",
+    "expo-router": "^56.2.11",
+    "expo-secure-store": "^56.0.4",
+    "expo-sqlite": "^56.0.5",
+    "expo-status-bar": "~56.0.4",
+    "jpeg-js": "^0.4.4",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-fast-tflite": "^3.0.1",
+    "react-native-gesture-handler": "^3.0.1",
+    "react-native-reanimated": "^4.4.1",
+    "react-native-safe-area-context": "^5.8.0",
+    "react-native-screens": "^4.25.2",
+    "react-native-worklets-core": "^1.6.3",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@types/jpeg-js": "^0.3.0",
+    "@types/react": "~19.2.2",
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.4",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "lint": "eslint src --ext .ts,.tsx",
+    "build:apk": "expo prebuild --platform android --clean && cd android && .\\gradlew assembleRelease && cd .. && powershell -Command \"New-Item -ItemType Directory -Force build-output; Copy-Item android/app/build/outputs/apk/release/app-release.apk build-output/maizai-v$(node -p 'require(./package.json).version').apk\""
+  },
+  "private": true
+}
