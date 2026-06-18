@@ -32,6 +32,17 @@ export const metadata: Metadata = {
   keywords: ["maize disease", "crop detection", "AI agriculture", "Cameroon", "smallholder farmers", "TFLite", "offline AI"],
   authors: [{ name: "MaizAI" }],
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    other: [
+      { rel: "mask-icon", url: "/favicon.svg", color: "#3d8b5c" },
+    ],
+  },
   openGraph: {
     title: "MaizAI — Maize Disease Detection",
     description:
