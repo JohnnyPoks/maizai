@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -56,56 +57,98 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero */}
-        <section className="relative overflow-hidden bg-gradient-to-b from-brand-50 via-white to-white pt-20 pb-24 px-6">
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-brand-100/40 rounded-full blur-3xl" />
-          </div>
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge className="mb-6 bg-brand-100 text-brand-700 border-brand-200 hover:bg-brand-100">
-              Open source · MIT licensed · Android
-            </Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-brand-900 mb-6 leading-tight">
-              Detect maize disease
-              <br />
-              <span className="text-brand-500">before it spreads.</span>
-            </h1>
-            <p className="text-lg md:text-xl text-earth-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-              MaizAI puts a trained AI in the farmer&apos;s pocket. Snap a leaf, get a diagnosis in seconds — even without internet. Designed for the realities of smallholder farming in Cameroon.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a href="#download">
-                <Button size="lg" className="bg-brand-500 hover:bg-brand-600 text-white gap-2 w-full sm:w-auto">
-                  <Download size={18} />
-                  Download for Android
-                </Button>
-              </a>
-              <a href="#how-it-works">
-                <Button size="lg" variant="outline" className="border-brand-300 text-brand-700 hover:bg-brand-50 gap-2 w-full sm:w-auto">
-                  See how it works
-                  <ChevronRight size={18} />
-                </Button>
-              </a>
+        {/* Hero — two-panel on desktop */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-brand-50 via-white to-white pt-16 pb-20 px-6">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid lg:grid-cols-2 gap-12 xl:gap-16 items-center">
+
+              {/* Text panel */}
+              <div>
+                <Badge className="mb-6 bg-brand-100 text-brand-700 border-brand-200 hover:bg-brand-100">
+                  Open source · MIT licensed · Android
+                </Badge>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-brand-900 mb-6 leading-tight">
+                  Detect maize disease
+                  <br />
+                  <span className="text-brand-500">before it spreads.</span>
+                </h1>
+                <p className="text-lg text-earth-600 mb-10 leading-relaxed max-w-lg">
+                  MaizAI puts a trained AI in the farmer&apos;s pocket. Snap a leaf, get a diagnosis in seconds — even without internet. Designed for the realities of smallholder farming in Cameroon.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a href="#download">
+                    <Button size="lg" className="bg-brand-500 hover:bg-brand-600 text-white gap-2 w-full sm:w-auto">
+                      <Download size={18} />
+                      Download for Android
+                    </Button>
+                  </a>
+                  <a href="#how-it-works">
+                    <Button size="lg" variant="outline" className="border-brand-300 text-brand-700 hover:bg-brand-50 gap-2 w-full sm:w-auto">
+                      See how it works
+                      <ChevronRight size={18} />
+                    </Button>
+                  </a>
+                </div>
+                <p className="mt-6 text-sm text-earth-400">
+                  Trained on the PlantVillage maize dataset · Validated on Cameroonian field conditions
+                </p>
+              </div>
+
+              {/* Hero image panel — desktop only */}
+              <div className="hidden lg:block relative">
+                <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
+                  <Image
+                    src="/images/hero.png"
+                    alt="Farmer using MaizAI to diagnose a maize leaf in the field"
+                    fill
+                    className="object-cover object-center"
+                    priority
+                    sizes="(max-width: 1280px) 50vw, 600px"
+                  />
+                </div>
+                {/* Floating badge */}
+                <div className="absolute -bottom-5 -left-5 bg-white rounded-2xl px-4 py-3 shadow-xl border border-brand-100 flex items-center gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-brand-500 flex items-center justify-center shrink-0">
+                    <Zap size={16} className="text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-brand-900 leading-none">Under 3 seconds</p>
+                    <p className="text-xs text-earth-500 mt-0.5">Leaf to diagnosis, offline</p>
+                  </div>
+                </div>
+              </div>
+
             </div>
-            <p className="mt-6 text-sm text-earth-400">
-              Trained on the PlantVillage maize dataset · Validated on Cameroonian field conditions
-            </p>
           </div>
         </section>
 
         {/* The Problem */}
         <section className="py-20 px-6 bg-earth-50 border-y border-earth-100">
-          <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-brand-900 mb-4 leading-snug">
-                Late diagnosis costs Cameroonian farmers up to{" "}
-                <span className="text-alert-high">35% of their maize harvest.</span>
-              </h2>
-              <p className="text-earth-600 text-sm mt-4">
-                <sup>*</sup> Source: Frontiers in Plant Science, 2026 — maize disease and pest detection in sub-Saharan Africa.
-              </p>
+          <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-10 items-stretch">
+
+            {/* Diseased leaf image with stat overlay */}
+            <div className="relative rounded-2xl overflow-hidden shadow-lg min-h-[300px]">
+              <Image
+                src="/images/diseased_leaf.png"
+                alt="Maize leaf showing gray leaf spot disease with characteristic rectangular lesions"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-6">
+                <h2 className="text-2xl md:text-[26px] font-bold text-white leading-snug">
+                  Late diagnosis costs Cameroonian farmers up to{" "}
+                  <span className="text-orange-400">35% of their maize harvest.</span>
+                </h2>
+                <p className="text-white/50 text-xs mt-3">
+                  <sup>*</sup> Frontiers in Plant Science, 2026 — maize disease &amp; pest detection in sub-Saharan Africa.
+                </p>
+              </div>
             </div>
-            <div className="space-y-5">
+
+            {/* Bullets */}
+            <div className="space-y-6 flex flex-col justify-center">
               {[
                 {
                   icon: Zap,
@@ -134,6 +177,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+
           </div>
         </section>
 
@@ -145,7 +189,6 @@ export default function LandingPage() {
               <p className="text-earth-500 mt-2">From leaf snap to recommendation in under 3 seconds.</p>
             </div>
             <div className="relative">
-              {/* Steps */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                   {
@@ -193,6 +236,57 @@ export default function LandingPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Sensor in the field */}
+        <section className="py-20 px-6 bg-earth-50 border-y border-earth-100">
+          <div className="mx-auto max-w-5xl grid md:grid-cols-2 gap-12 xl:gap-16 items-center">
+
+            {/* Text */}
+            <div>
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-7 w-7 rounded-md bg-brand-100 flex items-center justify-center">
+                  <Cpu size={14} className="text-brand-600" />
+                </div>
+                <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider">
+                  Sensor Node
+                </span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-brand-900 leading-snug mb-4">
+                Environmental context, direct from the field.
+              </h2>
+              <p className="text-earth-600 text-sm leading-relaxed mb-6">
+                The custom ESP32 node sits in the soil between maize rows, continuously monitoring soil moisture, ambient temperature, and relative humidity. It broadcasts live readings locally when the farmer is on plot, and syncs to the cloud via MQTT when they are away — so the rule engine always has context.
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  "Soil moisture · Temperature · Humidity",
+                  "mDNS local discovery — no cloud needed on-plot",
+                  "MQTT → HiveMQ Cloud when farmer is away",
+                  "Low-power, field-deployable design",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-earth-700">
+                    <span className="text-brand-400 mt-0.5 shrink-0">▸</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Sensor image */}
+            <div className="relative mx-auto w-full max-w-xs md:max-w-none">
+              <div className="relative rounded-2xl overflow-hidden shadow-xl aspect-[3/4]">
+                <Image
+                  src="/images/sensor_node.png"
+                  alt="ESP32 environmental sensor node with soil moisture probe deployed at the base of a maize stalk"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width: 768px) 80vw, (max-width: 1280px) 40vw, 480px"
+                />
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -295,7 +389,7 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-earth-400">
+            <div className="mt-8 flex items-center justify-center gap-2 text-xs text-earth-400 flex-wrap">
               <span className="font-mono bg-earth-100 px-2 py-0.5 rounded">Mobile</span>
               <ArrowRight size={12} />
               <span className="font-mono bg-earth-100 px-2 py-0.5 rounded">HTTPS / REST</span>
