@@ -2,8 +2,10 @@ import { TouchableOpacity, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
+
 export function DebugFab() {
-  if (!__DEV__) return null;
+  if (!debugEnabled) return null;
   return (
     <TouchableOpacity
       style={styles.fab}
