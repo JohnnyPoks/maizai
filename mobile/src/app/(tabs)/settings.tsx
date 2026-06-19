@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -58,6 +58,19 @@ export default function SettingsScreen() {
   }
 
   const version = Constants.expoConfig?.version ?? "0.1.0";
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onVersionTap = useCallback(() => {
+    if (!__DEV__) return;
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    if (tapCount.current >= 5) {
+      tapCount.current = 0;
+      router.push("/debug");
+    } else {
+      tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 2000);
+    }
+  }, []);
   const lastSyncLabel = lastSyncAt
     ? new Date(lastSyncAt).toLocaleTimeString()
     : strings.settings.never;
@@ -112,7 +125,7 @@ export default function SettingsScreen() {
 
       {/* About */}
       <Section title={strings.settings.about}>
-        <Row icon="information-outline" label={`${strings.settings.version} ${version}`} />
+        <Row icon="information-outline" label={`${strings.settings.version} ${version}`} onPress={onVersionTap} />
         <Row
           icon="github"
           label={strings.settings.openSource}

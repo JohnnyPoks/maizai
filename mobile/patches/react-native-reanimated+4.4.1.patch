@@ -1,0 +1,14 @@
+diff --git a/android/CMakeLists.txt b/android/CMakeLists.txt
+index abcdef1..abcdef2 100644
+--- a/android/CMakeLists.txt
++++ b/android/CMakeLists.txt
+@@ -94,8 +94,9 @@ set_property(
+ target_link_libraries(
+   reanimated
+   log
+   ReactAndroid::reactnative
+   ReactAndroid::jsi
+   fbjni::fbjni
+   android
++  c++_shared
+   react-native-worklets::worklets)

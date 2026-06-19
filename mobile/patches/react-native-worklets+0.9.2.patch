@@ -1,0 +1,9 @@
+diff --git a/android/CMakeLists.txt b/android/CMakeLists.txt
+index abcdef1..abcdef2 100644
+--- a/android/CMakeLists.txt
++++ b/android/CMakeLists.txt
+@@ -86,2 +86,2 @@ set_target_properties(worklets PROPERTIES LINKER_LANGUAGE CXX)
+-target_link_libraries(worklets android log ReactAndroid::reactnative
+-                      ReactAndroid::jsi fbjni::fbjni)
++target_link_libraries(worklets android log ReactAndroid::reactnative
++                      ReactAndroid::jsi fbjni::fbjni c++_shared)

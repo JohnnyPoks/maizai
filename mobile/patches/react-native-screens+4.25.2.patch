@@ -1,0 +1,12 @@
+diff --git a/android/CMakeLists.txt b/android/CMakeLists.txt
+index abcdef1..abcdef2 100644
+--- a/android/CMakeLists.txt
++++ b/android/CMakeLists.txt
+@@ -34,6 +34,7 @@ find_package(fbjni REQUIRED CONFIG)
+ target_link_libraries(rnscreens
+     ReactAndroid::reactnative
+     ReactAndroid::jsi
+     fbjni::fbjni
+     android
++    c++_shared
+ )

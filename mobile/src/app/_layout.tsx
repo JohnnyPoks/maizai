@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { initDatabase } from "@/lib/database";
 import { initialiseModel } from "@/lib/inference";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
+import { attachDebugInterceptor, loadDebugApiUrl } from "@/lib/debug-http";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,12 +20,13 @@ export default function RootLayout() {
   const { hydrateFromStorage } = useAuthStore();
 
   useEffect(() => {
-    // Initialise SQLite schema
     initDatabase();
-    // Pre-warm the TFLite model so first inference is fast
     initialiseModel().catch((err) => console.error("Model init failed:", err));
-    // Restore auth state from secure storage
     hydrateFromStorage();
+    if (__DEV__) {
+      attachDebugInterceptor();
+      loadDebugApiUrl();
+    }
   }, [hydrateFromStorage]);
 
   return (
@@ -39,6 +41,7 @@ export default function RootLayout() {
               name="result/[id]"
               options={{ presentation: "modal", animation: "slide_from_bottom" }}
             />
+            <Stack.Screen name="debug" />
             <Stack.Screen name="+not-found" />
           </Stack>
         </ErrorBoundary>

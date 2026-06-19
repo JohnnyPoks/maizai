@@ -13,7 +13,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#f0f9f2"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -26,7 +28,8 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "ios": {
@@ -50,13 +53,20 @@
         "react-native-fast-tflite",
         {
           "enableCoreMLDelegate": false,
-          "enableAndroidGpuLibraries": ["libOpenCL.so", "libOpenCL-pixel.so"]
+          "enableAndroidGpuLibraries": [
+            "libOpenCL.so",
+            "libOpenCL-pixel.so"
+          ]
         }
       ]
     ],
     "extra": {
-      "router": { "origin": false },
-      "eas": { "projectId": "to-be-set-on-first-eas-build" }
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "f43b5081-2f69-45bd-89a6-ad77ca38508d"
+      }
     },
     "experiments": {
       "typedRoutes": true

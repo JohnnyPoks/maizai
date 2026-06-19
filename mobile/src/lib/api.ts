@@ -12,11 +12,18 @@ import type {
   AccessRequestBody,
 } from "@/types/api";
 
-const BASE_URL = (Constants.expoConfig?.extra as Record<string, string> | undefined)?.apiUrl
-  ?? process.env.EXPO_PUBLIC_API_URL
-  ?? "http://10.0.2.2:3000";
+const DEFAULT_BASE_URL =
+  (Constants.expoConfig?.extra as Record<string, string> | undefined)?.apiUrl ??
+  process.env.EXPO_PUBLIC_API_URL ??
+  "http://10.0.2.2:3000";
 
-const client = axios.create({ baseURL: BASE_URL, timeout: 15_000 });
+export const client = axios.create({ baseURL: DEFAULT_BASE_URL, timeout: 15_000 });
+
+export const getDefaultBaseUrl = () => DEFAULT_BASE_URL;
+
+export function updateApiBaseUrl(url: string) {
+  client.defaults.baseURL = url;
+}
 
 // Attach Bearer token to every request when available
 client.interceptors.request.use(async (config) => {
