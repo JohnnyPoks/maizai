@@ -6,12 +6,12 @@ interface Props extends TextInputProps {
   error?: string;
 }
 
-export function TextInput({ label, error, ...props }: Props) {
+export function TextInput({ label, error, style, ...props }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <RNTextInput
-        style={[styles.input, error ? styles.inputError : null]}
+        style={[styles.input, error ? styles.inputError : null, style]}
         placeholderTextColor={colors.surface.textMuted}
         autoCapitalize="none"
         {...props}
