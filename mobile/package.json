@@ -52,6 +52,7 @@
     "android:log": "powershell -Command \"expo run:android 2>&1 | Tee-Object -FilePath \\\"../android-build-$(Get-Date -Format 'yyyyMMdd_HHmmss').log\\\"\"",
     "studio": "powershell -Command \"Start-Process 'C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe' -ArgumentList (Resolve-Path android).Path\"",
     "install:ndk26": "powershell -Command \"& \\\"$env:LOCALAPPDATA\\Android\\Sdk\\cmdline-tools\\latest\\bin\\sdkmanager.bat\\\" 'ndk;26.1.10909125'\"",
+    "android:wsl": "wsl -d Ubuntu -- bash -c 'cd /mnt/d/Projects/Personal/maizai/mobile && bash scripts/build-android-wsl.sh'",
     "lint": "eslint src --ext .ts,.tsx",
     "build:apk": "expo prebuild --platform android --clean && cd android && .\\gradlew assembleRelease && cd .. && powershell -Command \"New-Item -ItemType Directory -Force build-output; Copy-Item android/app/build/outputs/apk/release/app-release.apk build-output/maizai-v$(node -p 'require(./package.json).version').apk\""
   },
