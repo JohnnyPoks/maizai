@@ -51,7 +51,7 @@ export function CameraView({ cameraRef }: Props) {
 const bracketColor = colors.brand[400];
 
 const styles = StyleSheet.create({
-  overlay: { ...StyleSheet.absoluteFillObject, flexDirection: "column" },
+  overlay: { position: "absolute", left: 0, right: 0, top: 0, bottom: 0, flexDirection: "column" },
   dim: { backgroundColor: "rgba(0,0,0,0.45)" },
   middleRow: { flexDirection: "row" },
   frame: { position: "relative" },

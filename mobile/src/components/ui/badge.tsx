@@ -2,8 +2,6 @@ import { View, Text, StyleSheet } from "react-native";
 import { colors } from "@/theme/colors";
 import type { UrgencyLevel, DiseaseClass } from "@/types/domain";
 
-type BadgeVariant = "urgency" | "disease" | "sync";
-
 interface BadgeProps {
   label: string;
   urgency?: UrgencyLevel;

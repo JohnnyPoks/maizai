@@ -1,4 +1,4 @@
-import { TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
 

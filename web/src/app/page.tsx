@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ApkDownloadButton } from "@/components/shared/apk-download-button";
 import {
   Smartphone,
   Wifi,
@@ -424,16 +425,7 @@ export default function LandingPage() {
                     <p className="text-xs text-earth-400">Android 8.0+</p>
                   </div>
                 </div>
-                <a
-                  href="https://github.com/JohnnyPoks/maizai/releases/latest"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button className="w-full bg-brand-500 hover:bg-brand-600 text-white gap-2 mb-5">
-                    <Download size={16} />
-                    Download APK
-                  </Button>
-                </a>
+                <ApkDownloadButton />
                 <ol className="space-y-2 text-xs text-earth-600">
                   <li className="flex gap-2">
                     <span className="font-bold text-brand-500 shrink-0">1.</span>

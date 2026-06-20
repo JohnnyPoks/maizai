@@ -51,7 +51,7 @@ export default function SettingsScreen() {
       await cacheThresholds(thresholds);
       Alert.alert("Done", "Rule thresholds refreshed.");
     } catch {
-      Alert.alert("Error", strings.errors.networkError);
+      Alert.alert("Error", strings.errors.offline);
     } finally {
       setRefreshingThresholds(false);
     }

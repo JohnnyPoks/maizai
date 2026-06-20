@@ -25,7 +25,7 @@ export interface ClassificationResult {
 export async function initialiseModel(): Promise<void> {
   if (modelInstance) return;
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  modelInstance = await loadTensorflowModel(require("../../assets/models/maize_classifier.tflite"));
+  modelInstance = await loadTensorflowModel(require("../../assets/models/maize_classifier.tflite"), []);
 }
 
 export async function classifyLeaf(imageUri: string): Promise<ClassificationResult> {
@@ -45,13 +45,13 @@ export async function classifyLeaf(imageUri: string): Promise<ClassificationResu
 
   // Step 3: Run inference
   const start = performance.now();
-  const output = modelInstance.runSync([inputTensor]);
+  const output = modelInstance.runSync([inputTensor.buffer as ArrayBuffer]);
   const inferenceTimeMs = Math.round(performance.now() - start);
 
   // Step 4: Interpret output
   // The model outputs a uint8 quantised softmax vector of length 4
   // matching the order of DISEASE_CLASSES.
-  const rawScores = Array.from(output[0] as Uint8Array);
+  const rawScores = Array.from(new Uint8Array(output[0] as ArrayBuffer));
   const total = rawScores.reduce((a, b) => a + b, 0) || 1;
 
   const probabilities: Record<DiseaseClass, number> = {
@@ -82,8 +82,11 @@ async function imageToUint8Tensor(uri: string): Promise<Uint8Array> {
     encoding: FileSystem.EncodingType.Base64,
   });
 
-  // jpeg-js needs a Buffer; Buffer is globally polyfilled in React Native.
-  const rawBytes = Buffer.from(base64, "base64");
+  const binaryString = atob(base64);
+  const rawBytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    rawBytes[i] = binaryString.charCodeAt(i);
+  }
   const { width, height, data } = jpegJs.decode(rawBytes, { useTArray: true });
 
   // data is RGBA (4 bytes/pixel); model expects RGB (3 bytes/pixel)

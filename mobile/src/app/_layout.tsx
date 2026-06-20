@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { View } from "react-native";
 import { Stack } from "expo-router";
+import { SplashScreen } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
@@ -11,6 +12,9 @@ import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { DebugFab } from "@/components/shared/debug-fab";
 import { attachDebugInterceptor, loadDebugApiUrl } from "@/lib/debug-http";
 
+// Keep the native splash visible until auth is hydrated from storage.
+SplashScreen.preventAutoHideAsync();
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { retry: 2, staleTime: 60_000 },
@@ -19,17 +23,25 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const { hydrateFromStorage } = useAuthStore();
+  const { hydrateFromStorage, isLoading } = useAuthStore();
 
   useEffect(() => {
     initDatabase();
     initialiseModel().catch((err) => console.error("Model init failed:", err));
     hydrateFromStorage();
-    if (__DEV__) {
+    const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
+    if (debugEnabled) {
       attachDebugInterceptor();
       loadDebugApiUrl();
     }
   }, [hydrateFromStorage]);
+
+  // Hide the splash as soon as auth hydration finishes.
+  useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [isLoading]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

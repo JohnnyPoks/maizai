@@ -91,7 +91,7 @@ export const debugStore = new DebugStore();
 
 export function dlog(tag: string, message: string) {
   if (__DEV__) {
-    console.log(`[${tag}] ${message}`);
+    console.warn(`[${tag}] ${message}`);
     debugStore.log('info', tag, message);
   }
 }

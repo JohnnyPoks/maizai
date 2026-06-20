@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { useCameraPermissions } from "expo-camera";
 import type { CameraView } from "expo-camera";
 

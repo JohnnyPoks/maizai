@@ -29,7 +29,7 @@ export default function SignInScreen() {
     } catch (err) {
       const msg = err instanceof Error && err.message.includes("401")
         ? strings.auth.invalidCredentials
-        : strings.errors.networkError;
+        : strings.errors.offline;
       setError(msg);
     } finally {
       setLoading(false);

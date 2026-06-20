@@ -53,6 +53,7 @@ export default function ResultScreen() {
   }
 
   function handleDelete() {
+    if (!detail) return;
     Alert.alert(strings.history.deleteConfirmTitle, strings.history.deleteConfirmBody, [
       { text: strings.history.cancel, style: "cancel" },
       {
@@ -109,7 +110,6 @@ export default function ResultScreen() {
                   {strings.diseases[cls]}
                 </Text>
                 <ConfidenceBar
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   value={(detail as unknown as Record<string, unknown>)[cls as string] as number ?? 0}
                   compact
                 />

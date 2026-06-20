@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# Pre-commit hook: TypeScript type check + ESLint on staged files.
+# Install once with: git config core.hooksPath .githooks
+set -e
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
+
+if [ -z "$STAGED" ]; then
+  exit 0
+fi
+
+run_check() {
+  local dir="$1"
+  local label="$2"
+  if echo "$STAGED" | grep -q "^${dir}/"; then
+    echo "--- $label: typecheck ---"
+    (cd "$dir" && npx tsc --noEmit) || { echo "$label typecheck FAILED"; exit 1; }
+    echo "--- $label: lint ---"
+    # Only lint staged TS/TSX files in this subproject
+    STAGED_TS=$(echo "$STAGED" | grep "^${dir}/.*\.\(ts\|tsx\)$" | sed "s|^${dir}/||")
+    if [ -n "$STAGED_TS" ]; then
+      (cd "$dir" && echo "$STAGED_TS" | xargs npx eslint --max-warnings=0) || { echo "$label lint FAILED"; exit 1; }
+    fi
+  fi
+}
+
+run_check "web"    "web"
+run_check "mobile" "mobile"
+
+echo "Pre-commit checks passed."

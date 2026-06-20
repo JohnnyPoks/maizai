@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, Alert, Linking } from "react-native";
 import { router } from "expo-router";
-import { useHaptics } from "expo-haptics";
 import * as Haptics from "expo-haptics";
 import { useCamera } from "@/hooks/use-camera";
 import { useInference } from "@/hooks/use-inference";
@@ -24,7 +23,7 @@ import * as crypto from "expo-crypto";
 export default function CaptureScreen() {
   const { cameraRef, permission, requestPermission, takePicture } = useCamera();
   const { classify, isRunning } = useInference();
-  const { sync, pendingCount } = useSync();
+  const { sync } = useSync();
 
   if (!permission) return null;
 
