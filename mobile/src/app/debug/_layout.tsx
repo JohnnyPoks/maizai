@@ -1,8 +1,10 @@
 import { Redirect } from "expo-router";
 import { Stack } from "expo-router";
 
+const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
+
 export default function DebugLayout() {
-  if (!__DEV__) return <Redirect href="/(tabs)/capture" />;
+  if (!debugEnabled) return <Redirect href="/(tabs)/capture" />;
   return (
     <Stack
       screenOptions={{
