@@ -17,6 +17,14 @@ export async function POST(req: NextRequest) {
 
   const { fullName, email, affiliation, reason } = parsed.data;
 
+  const existingUser = await db.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return NextResponse.json(
+      { error: { code: "EMAIL_IN_USE", message: "This email is already registered. Please sign in instead." } },
+      { status: 409 }
+    );
+  }
+
   const existing = await db.accessRequest.findFirst({
     where: { email, status: "PENDING" },
   });
