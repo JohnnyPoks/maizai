@@ -10,13 +10,19 @@ import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
 
 export default function ChangePasswordScreen() {
-  const { setMustChangePassword } = useAuthStore();
+  const { setMustChangePassword, mustChangePassword } = useAuthStore();
+  const isForced = mustChangePassword;
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit() {
+    if (!isForced && !currentPassword) {
+      setError("Enter your current password.");
+      return;
+    }
     if (newPassword !== confirm) {
       setError(strings.auth.passwordsDoNotMatch);
       return;
@@ -28,11 +34,15 @@ export default function ChangePasswordScreen() {
     setLoading(true);
     setError(null);
     try {
-      await api.changePassword(newPassword);
+      await api.changePassword(newPassword, isForced ? undefined : currentPassword);
       setMustChangePassword(false);
       router.replace("/(tabs)/capture");
-    } catch {
-      setError(strings.errors.generic);
+    } catch (err) {
+      const status =
+        typeof err === "object" && err !== null && "response" in err
+          ? (err as { response?: { status?: number } }).response?.status
+          : undefined;
+      setError(status === 400 ? "Your current password is incorrect." : strings.errors.generic);
     } finally {
       setLoading(false);
     }
@@ -47,6 +57,16 @@ export default function ChangePasswordScreen() {
       <Text style={styles.subtitle}>{strings.auth.changePasswordSubtitle}</Text>
 
       <View style={styles.form}>
+        {!isForced && (
+          <TextInput
+            label="Current password"
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+            secureTextEntry
+            autoComplete="current-password"
+            placeholder="Your current password"
+          />
+        )}
         <TextInput
           label={strings.auth.newPassword}
           value={newPassword}
@@ -68,7 +88,7 @@ export default function ChangePasswordScreen() {
           label={strings.auth.setPassword}
           onPress={handleSubmit}
           loading={loading}
-          disabled={!newPassword || !confirm}
+          disabled={!newPassword || !confirm || (!isForced && !currentPassword)}
         />
       </View>
     </ScrollView>

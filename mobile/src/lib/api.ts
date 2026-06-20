@@ -48,8 +48,20 @@ export const api = {
     return data;
   },
 
-  async changePassword(newPassword: string): Promise<void> {
-    await client.post("/api/users/me/password", { newPassword });
+  // currentPassword is required for a voluntary change; omit it for the forced
+  // first-login change (the server only requires newPassword in that case).
+  async changePassword(newPassword: string, currentPassword?: string): Promise<void> {
+    const body = currentPassword ? { currentPassword, newPassword } : { newPassword };
+    await client.post("/api/users/me/password", body);
+  },
+
+  async submitFeedback(body: {
+    type: "BUG" | "SUGGESTION";
+    message: string;
+    appVersion?: string;
+    device?: string;
+  }): Promise<void> {
+    await client.post("/api/feedback", body);
   },
 
   async syncImage(body: SyncImageRequest): Promise<SyncImageResponse> {

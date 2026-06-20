@@ -11,7 +11,9 @@
       "env": {
         "EXPO_PUBLIC_DEBUG_MODE": "true",
         "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app",
-        "EXPO_PUBLIC_SUPPORT_EMAIL": "johnpokam95@gmail.com"
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "johnpokam95@gmail.com",
+        "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "dz2rimr0o",
+        "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "maizai_unsigned"
       }
     },
     "production": {
@@ -19,7 +21,9 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app",
-        "EXPO_PUBLIC_SUPPORT_EMAIL": "johnpokam95@gmail.com"
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "johnpokam95@gmail.com",
+        "EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME": "dz2rimr0o",
+        "EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET": "maizai_unsigned"
       }
     }
   },

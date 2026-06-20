@@ -1,6 +1,7 @@
 import { loadTensorflowModel, TensorflowModel } from "react-native-fast-tflite";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
+import { Asset } from "expo-asset";
 // jpeg-js is a pure-JS JPEG decoder — no native bindings required
 import jpegJs from "jpeg-js";
 import { dlog, dlogWarn, dlogError } from "./debug-store";
@@ -34,9 +35,17 @@ export async function initialiseModel(): Promise<void> {
 
   loadingPromise = (async () => {
     try {
+      // In release builds, require() resolves to a bundled asset name with no
+      // protocol, which fast-tflite cannot open. Resolve it to a real file://
+      // URI via expo-asset first.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const modelAsset = require("../../assets/models/maize_classifier.tflite");
-      const model = await loadTensorflowModel(modelAsset, []);
+      const asset = Asset.fromModule(require("../../assets/models/maize_classifier.tflite"));
+      if (!asset.localUri) {
+        await asset.downloadAsync();
+      }
+      const uri = asset.localUri ?? asset.uri;
+      dlog("inference", `Loading model from ${uri}`);
+      const model = await loadTensorflowModel({ url: uri }, []);
       modelInstance = model;
       const input = model.inputs[0];
       const output = model.outputs[0];

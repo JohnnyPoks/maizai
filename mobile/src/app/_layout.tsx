@@ -61,6 +61,10 @@ export default function RootLayout() {
                 options={{ presentation: "modal", animation: "slide_from_bottom" }}
               />
               <Stack.Screen name="debug" />
+              <Stack.Screen
+                name="feedback"
+                options={{ presentation: "modal", animation: "slide_from_bottom" }}
+              />
               <Stack.Screen name="+not-found" />
             </Stack>
           </ErrorBoundary>

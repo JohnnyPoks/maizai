@@ -11,8 +11,6 @@ import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
 import Constants from "expo-constants";
 
-const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL ?? "minasji86@gmail.com";
-
 export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
   const { sync, isSyncing, lastSyncAt, pendingCount } = useSync();
@@ -137,7 +135,7 @@ export default function SettingsScreen() {
         <Row
           icon="bug-outline"
           label={strings.settings.reportBug}
-          onPress={() => Linking.openURL(`mailto:${SUPPORT_EMAIL}?subject=MaizAI Bug Report`)}
+          onPress={() => router.push("/feedback")}
           showChevron
         />
       </Section>

@@ -13,6 +13,7 @@ import {
   Users,
   Settings,
   ClipboardList,
+  MessageSquare,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
   { href: "/recommendations", label: "Recommendations", icon: Lightbulb },
   { href: "/thresholds", label: "Thresholds", icon: Sliders },
   { href: "/access-requests", label: "Access Requests", icon: ClipboardList, superAdminOnly: true },
+  { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/users", label: "Users", icon: Users, superAdminOnly: true },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

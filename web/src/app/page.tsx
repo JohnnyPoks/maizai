@@ -4,6 +4,7 @@ import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ApkDownloadButton } from "@/components/shared/apk-download-button";
+import { InstallPrompt } from "@/components/shared/install-prompt";
 import {
   Smartphone,
   Wifi,
@@ -21,6 +22,7 @@ import {
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <InstallPrompt />
       {/* Navigation */}
       <header className="sticky top-0 z-50 border-b border-brand-100 bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">

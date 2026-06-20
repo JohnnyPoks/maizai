@@ -59,3 +59,24 @@ export async function notifySuperAdminOfAccessRequest(req: {
 <p><a href="${reviewUrl}" style="background:#3d8b5c;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;">Review request</a></p>`;
   return sendEmail({ to: process.env.SUPER_ADMIN_EMAIL!, subject, text, html });
 }
+
+export async function notifySuperAdminOfFeedback(fb: {
+  type: string;
+  message: string;
+  email: string | null;
+  appVersion: string | null;
+  id: string;
+}) {
+  const reviewUrl = `${process.env.NEXTAUTH_URL}/feedback`;
+  const label = fb.type === "SUGGESTION" ? "suggestion" : "bug report";
+  const subject = `New MaizAI ${label}`;
+  const text = `New ${label} received.\n\nFrom:    ${fb.email ?? "(anonymous)"}\nVersion: ${fb.appVersion ?? "(unknown)"}\n\n${fb.message}\n\nReview at: ${reviewUrl}`;
+  const html = `<h2 style="color:#1c3a28;">New MaizAI ${escapeHtml(label)}</h2>
+<table style="border-collapse:collapse;margin:16px 0;">
+  <tr><td><b>From</b></td><td style="padding-left:16px;">${escapeHtml(fb.email ?? "(anonymous)")}</td></tr>
+  <tr><td><b>App version</b></td><td style="padding-left:16px;">${escapeHtml(fb.appVersion ?? "(unknown)")}</td></tr>
+</table>
+<blockquote style="border-left:3px solid #3d8b5c;padding-left:12px;color:#555;">${escapeHtml(fb.message)}</blockquote>
+<p><a href="${reviewUrl}" style="background:#3d8b5c;color:white;padding:10px 16px;border-radius:6px;text-decoration:none;display:inline-block;">View feedback</a></p>`;
+  return sendEmail({ to: process.env.SUPER_ADMIN_EMAIL!, subject, text, html });
+}

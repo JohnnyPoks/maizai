@@ -48,6 +48,14 @@ export const setPasswordSchema = z.object({
   newPassword: z.string().min(8),
 });
 
+export const feedbackSchema = z.object({
+  type: z.enum(["BUG", "SUGGESTION"]),
+  message: z.string().min(5).max(2000),
+  appVersion: z.string().max(40).optional(),
+  device: z.string().max(120).optional(),
+  email: z.string().email().optional(),
+});
+
 export const syncImageSchema = z.object({
   base64Image: z.string().min(1),
   capturedAt: z.string().datetime(),
