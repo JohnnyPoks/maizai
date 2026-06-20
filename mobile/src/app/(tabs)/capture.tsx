@@ -18,6 +18,7 @@ import { generateRecommendation, getCachedThresholds } from "@/lib/rule-engine";
 import { triggerBackgroundSync } from "@/lib/sync";
 import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
+import { dlogError } from "@/lib/debug-store";
 import * as crypto from "expo-crypto";
 
 export default function CaptureScreen() {
@@ -48,13 +49,20 @@ export default function CaptureScreen() {
 
   async function handleCapture() {
     const uri = await takePicture();
-    if (!uri) return;
+    if (!uri) {
+      Alert.alert("Camera", "Could not capture an image. Please try again.");
+      return;
+    }
 
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
-    const result = await classify(uri);
-    if (!result) {
-      Alert.alert("Error", strings.errors.generic);
+    let result;
+    try {
+      result = await classify(uri);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      dlogError("capture", `Classification failed: ${msg}`);
+      Alert.alert("Analysis failed", msg);
       return;
     }
 

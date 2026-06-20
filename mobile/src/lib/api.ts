@@ -12,10 +12,13 @@ import type {
   AccessRequestBody,
 } from "@/types/api";
 
+// Resolution order: app.json extra.apiUrl → EXPO_PUBLIC_API_URL (set per EAS
+// profile) → the production cloud back-end. The debug screen can override this
+// at runtime (e.g. a Cloudflare tunnel) without rebuilding the APK.
 const DEFAULT_BASE_URL =
   (Constants.expoConfig?.extra as Record<string, string> | undefined)?.apiUrl ??
   process.env.EXPO_PUBLIC_API_URL ??
-  "http://10.0.2.2:3000";
+  "https://maizai.vercel.app";
 
 export const client = axios.create({ baseURL: DEFAULT_BASE_URL, timeout: 15_000 });
 

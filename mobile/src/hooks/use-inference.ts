@@ -3,19 +3,13 @@ import { classifyLeaf, type ClassificationResult } from "@/lib/inference";
 
 export function useInference() {
   const [isRunning, setIsRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
+  // Throws on failure so the caller can surface the real error message.
   const classify = useCallback(
-    async (imageUri: string): Promise<ClassificationResult | null> => {
+    async (imageUri: string): Promise<ClassificationResult> => {
       setIsRunning(true);
-      setError(null);
       try {
-        const result = await classifyLeaf(imageUri);
-        return result;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setError(msg);
-        return null;
+        return await classifyLeaf(imageUri);
       } finally {
         setIsRunning(false);
       }
@@ -23,5 +17,5 @@ export function useInference() {
     [],
   );
 
-  return { classify, isRunning, error };
+  return { classify, isRunning };
 }

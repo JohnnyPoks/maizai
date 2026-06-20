@@ -8,11 +8,17 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_DEBUG_MODE": "true" }
+      "env": {
+        "EXPO_PUBLIC_DEBUG_MODE": "true",
+        "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app"
+      }
     },
     "production": {
       "android": { "buildType": "apk" },
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app"
+      }
     }
   },
   "submit": {

@@ -52,10 +52,10 @@
     "android": "expo run:android",
     "android:log": "powershell -Command \"expo run:android 2>&1 | Tee-Object -FilePath \\\"../android-build-$(Get-Date -Format 'yyyyMMdd_HHmmss').log\\\"\"",
     "studio": "powershell -Command \"Start-Process 'C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe' -ArgumentList (Resolve-Path android).Path\"",
-    "build:apk": "wsl -d Ubuntu -u root -- bash /mnt/d/Projects/Personal/maizai/mobile/scripts/build-android-wsl.sh",
+    "build:preview": "eas build --platform android --profile preview",
+    "build:production": "eas build --platform android --profile production",
     "install:device": "powershell -File scripts/install-device.ps1",
     "logs:crash": "powershell -File scripts/crash-log.ps1",
-    "release:create": "powershell -File scripts/create-release.ps1",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit"
   },

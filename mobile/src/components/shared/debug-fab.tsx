@@ -9,7 +9,7 @@ export function DebugFab() {
   return (
     <TouchableOpacity
       style={styles.fab}
-      onPress={() => router.push("/debug")}
+      onPress={() => router.navigate("/debug")}
       activeOpacity={0.8}
     >
       <MaterialCommunityIcons name="bug-outline" size={22} color="#000" />

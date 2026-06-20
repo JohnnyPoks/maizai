@@ -12,6 +12,14 @@ export default function HttpLogsScreen() {
     return debugStore.subscribe(() => setLogs(debugStore.getHttpLogs()));
   }, []);
 
+  function prettyJson(raw: string): string {
+    try {
+      return JSON.stringify(JSON.parse(raw), null, 2);
+    } catch {
+      return raw; // not JSON — show as-is
+    }
+  }
+
   function statusColor(entry: HttpLogEntry): string {
     if (entry.error) return "#ef4444";
     if (!entry.statusCode) return "#888";
@@ -89,13 +97,13 @@ export default function HttpLogsScreen() {
                 {item.requestBody && (
                   <>
                     <Text style={styles.bodyLabel}>Request Body</Text>
-                    <Text style={styles.bodyText}>{item.requestBody}</Text>
+                    <Text style={styles.bodyText}>{prettyJson(item.requestBody)}</Text>
                   </>
                 )}
                 {item.responseBody && (
                   <>
                     <Text style={styles.bodyLabel}>Response Body</Text>
-                    <Text style={styles.bodyText}>{item.responseBody}</Text>
+                    <Text style={styles.bodyText}>{prettyJson(item.responseBody)}</Text>
                   </>
                 )}
                 {item.error && (
