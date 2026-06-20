@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Loader2, KeyRound, CheckCircle2 } from "lucide-react";
 
@@ -92,10 +93,9 @@ export default function ChangePasswordPage() {
                   <Label htmlFor="newPassword" className="text-sm font-medium text-brand-900">
                     New password
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="newPassword"
                     name="newPassword"
-                    type="password"
                     autoComplete="new-password"
                     placeholder="Minimum 8 characters"
                     minLength={8}
@@ -107,10 +107,9 @@ export default function ChangePasswordPage() {
                   <Label htmlFor="confirmPassword" className="text-sm font-medium text-brand-900">
                     Confirm password
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="confirmPassword"
                     name="confirmPassword"
-                    type="password"
                     autoComplete="new-password"
                     placeholder="Repeat your password"
                     minLength={8}

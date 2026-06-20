@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -134,8 +135,7 @@ export function SettingsClient({ userEmail, userName, userRole }: SettingsClient
             <form onSubmit={changePassword} className="space-y-4">
               <div className="space-y-1">
                 <Label>Current password</Label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   required
@@ -144,8 +144,7 @@ export function SettingsClient({ userEmail, userName, userRole }: SettingsClient
               </div>
               <div className="space-y-1">
                 <Label>New password</Label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
@@ -154,8 +153,7 @@ export function SettingsClient({ userEmail, userName, userRole }: SettingsClient
               </div>
               <div className="space-y-1">
                 <Label>Confirm new password</Label>
-                <Input
-                  type="password"
+                <PasswordInput
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required

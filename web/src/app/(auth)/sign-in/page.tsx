@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import {
   Loader2,
@@ -434,10 +435,9 @@ export default function SignInPage() {
             <Label htmlFor="password" className="text-sm font-medium text-brand-800">
               Password
             </Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="current-password"
               required
               autoFocus
