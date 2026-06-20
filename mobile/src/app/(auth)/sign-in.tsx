@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Keyboard } from "react-native";
 import { router, Link } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores/auth-store";
@@ -17,6 +17,7 @@ export default function SignInScreen() {
 
   async function handleSignIn() {
     if (!email.trim() || !password) return;
+    Keyboard.dismiss();
     setLoading(true);
     setError(null);
     try {

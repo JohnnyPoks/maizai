@@ -1,6 +1,7 @@
 import { loadTensorflowModel, TensorflowModel } from "react-native-fast-tflite";
 import * as ImageManipulator from "expo-image-manipulator";
-import * as FileSystem from "expo-file-system";
+// The classic readAsStringAsync API moved to the /legacy entry point in SDK 54+.
+import * as FileSystem from "expo-file-system/legacy";
 import { Asset } from "expo-asset";
 // jpeg-js is a pure-JS JPEG decoder — no native bindings required
 import jpegJs from "jpeg-js";

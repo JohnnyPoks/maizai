@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Keyboard, ToastAndroid } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { api } from "@/lib/api";
@@ -31,11 +31,13 @@ export default function ChangePasswordScreen() {
       setError("Password must be at least 8 characters.");
       return;
     }
+    Keyboard.dismiss();
     setLoading(true);
     setError(null);
     try {
       await api.changePassword(newPassword, isForced ? undefined : currentPassword);
       setMustChangePassword(false);
+      ToastAndroid.show("Password changed successfully", ToastAndroid.SHORT);
       router.replace("/(tabs)/capture");
     } catch (err) {
       const status =

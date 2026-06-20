@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
 import { FeedbackStatus, FeedbackType } from "@prisma/client";
-import { CheckCircle2, RotateCcw, Bug, Lightbulb } from "lucide-react";
+import { CheckCircle2, RotateCcw, Bug, Lightbulb, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,24 @@ export function FeedbackTable({ data }: { data: FeedbackRow[] }) {
   async function toggle(id: string) {
     await fetch(`/api/feedback/${id}`, { method: "PATCH" });
     router.refresh();
+  }
+
+  function exportMarkdown() {
+    const lines = [`# MaizAI Feedback (${data.length} items, exported ${format(new Date(), "dd MMM yyyy HH:mm")})`, ""];
+    for (const f of data) {
+      lines.push(`## [${f.type}] ${f.status} — ${format(new Date(f.createdAt), "dd MMM yyyy HH:mm")}`);
+      lines.push(
+        `From: ${f.email ?? "anonymous"}${f.appVersion ? ` · v${f.appVersion}` : ""}${f.device ? ` · ${f.device}` : ""}`,
+      );
+      lines.push("", f.message, "", "---", "");
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `maizai-feedback-${new Date().toISOString().slice(0, 10)}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   const columns: ColumnDef<FeedbackRow>[] = [
@@ -104,5 +122,14 @@ export function FeedbackTable({ data }: { data: FeedbackRow[] }) {
     },
   ];
 
-  return <DataTable columns={columns} data={data} searchPlaceholder="Search feedback…" />;
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs" onClick={exportMarkdown}>
+          <Download size={13} /> Export Markdown
+        </Button>
+      </div>
+      <DataTable columns={columns} data={data} searchPlaceholder="Search feedback…" />
+    </div>
+  );
 }

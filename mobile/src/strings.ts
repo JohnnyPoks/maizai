@@ -89,7 +89,7 @@ export const strings = {
     about: "About",
     version: "Version",
     openSource: "Open source on GitHub",
-    reportBug: "Report a bug",
+    reportBug: "Report an issue",
     license: "MIT Licence",
     account: "Account",
     signOut: "Sign out",

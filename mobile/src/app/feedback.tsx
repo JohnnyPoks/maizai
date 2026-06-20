@@ -58,7 +58,7 @@ export default function FeedbackScreen() {
 
       <Text style={styles.label}>What would you like to share?</Text>
       <View style={styles.typeRow}>
-        <TypeChip label="Report a bug" active={type === "BUG"} onPress={() => setType("BUG")} />
+        <TypeChip label="Report an issue" active={type === "BUG"} onPress={() => setType("BUG")} />
         <TypeChip label="Suggestion" active={type === "SUGGESTION"} onPress={() => setType("SUGGESTION")} />
       </View>
 

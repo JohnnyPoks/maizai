@@ -483,9 +483,9 @@ export default function LandingPage() {
                 </a>
               </li>
               <li>
-                <a href="https://github.com/JohnnyPoks/maizai/issues" target="_blank" rel="noopener noreferrer" className="hover:text-brand-600 transition-colors">
-                  Report a bug
-                </a>
+                <Link href="/report-issue" className="hover:text-brand-600 transition-colors">
+                  Report an issue
+                </Link>
               </li>
               <li>
                 <Link href="/request-access" className="hover:text-brand-600 transition-colors">
