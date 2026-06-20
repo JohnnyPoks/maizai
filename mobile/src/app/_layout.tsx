@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { View } from "react-native";
 import { Stack } from "expo-router";
-import { SplashScreen } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
