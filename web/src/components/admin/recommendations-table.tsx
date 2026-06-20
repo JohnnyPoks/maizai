@@ -117,7 +117,6 @@ export function RecommendationsTable({ data }: { data: RecommendationRow[] }) {
       columns={columns}
       data={data}
       searchPlaceholder="Search recommendations…"
-      exportFilename="recommendations"
     />
   );
 }

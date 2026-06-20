@@ -1,12 +1,28 @@
 "use client";
 
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { format } from "date-fns";
 import { Role } from "@prisma/client";
-import { Trash2, RotateCcw, Ban, CheckCircle2 } from "lucide-react";
+import { Trash2, RotateCcw, Ban, CheckCircle2, Pencil, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type UserRow = {
@@ -32,6 +48,79 @@ const roleLabel: Record<Role, string> = {
   FARMER: "Farmer",
 };
 
+function EditRoleDialog({
+  user,
+  onDone,
+}: {
+  user: UserRow;
+  onDone: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [role, setRole] = useState<Role>(user.role);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSave() {
+    if (role === user.role) { setOpen(false); return; }
+    setLoading(true);
+    await fetch(`/api/users/${user.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    setLoading(false);
+    setOpen(false);
+    onDone();
+  }
+
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-earth-400 hover:text-brand-600"
+        title="Edit role"
+        onClick={() => { setRole(user.role); setOpen(true); }}
+      >
+        <Pencil size={13} />
+      </Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit user — {user.fullName}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-earth-600">{user.email}</p>
+            <div className="space-y-1">
+              <Label>Role</Label>
+              <Select value={role} onValueChange={(v) => setRole(v as Role)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={Role.SUPER_ADMIN}>Super-Admin</SelectItem>
+                  <SelectItem value={Role.ADMIN}>Admin</SelectItem>
+                  <SelectItem value={Role.FARMER}>Farmer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button
+              className="bg-brand-500 hover:bg-brand-600 text-white"
+              onClick={handleSave}
+              disabled={loading || role === user.role}
+            >
+              {loading && <Loader2 size={13} className="animate-spin mr-1" />}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export function UsersTable({ data, isSuperAdmin }: { data: UserRow[]; isSuperAdmin: boolean }) {
   const router = useRouter();
 
@@ -51,7 +140,7 @@ export function UsersTable({ data, isSuperAdmin }: { data: UserRow[]; isSuperAdm
   }
 
   async function deleteUser(id: string, name: string) {
-    if (!confirm(`Delete user "${name}"? This action cannot be undone.`)) return;
+    if (!confirm(`Delete user "${name}"? Their data will be retained but their account will be permanently removed.`)) return;
     await fetch(`/api/users/${id}`, { method: "DELETE" });
     router.refresh();
   }
@@ -108,6 +197,7 @@ export function UsersTable({ data, isSuperAdmin }: { data: UserRow[]; isSuperAdm
             header: "Actions",
             cell: ({ row }: { row: { original: UserRow } }) => (
               <div className="flex items-center gap-1">
+                <EditRoleDialog user={row.original} onDone={() => router.refresh()} />
                 <Button
                   variant="ghost"
                   size="icon"
@@ -147,7 +237,6 @@ export function UsersTable({ data, isSuperAdmin }: { data: UserRow[]; isSuperAdm
       columns={columns}
       data={data}
       searchPlaceholder="Search users…"
-      exportFilename="users"
     />
   );
 }

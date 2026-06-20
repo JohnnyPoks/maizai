@@ -147,7 +147,6 @@ export function LeafImagesTable({ data, isSuperAdmin }: { data: LeafImageRow[]; 
       columns={columns}
       data={data}
       searchPlaceholder="Search images…"
-      exportFilename="leaf-images"
     />
   );
 }

@@ -108,7 +108,6 @@ export function SensorReadingsTable({ data, isSuperAdmin }: { data: SensorReadin
       columns={columns}
       data={data}
       searchPlaceholder="Search by node ID…"
-      exportFilename="sensor-readings"
     />
   );
 }

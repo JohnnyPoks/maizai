@@ -115,7 +115,6 @@ export function ClassificationsTable({ data }: { data: ClassificationRow[] }) {
       columns={columns}
       data={data}
       searchPlaceholder="Search classifications…"
-      exportFilename="classifications"
     />
   );
 }

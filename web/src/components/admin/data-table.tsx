@@ -13,7 +13,6 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import Papa from "papaparse";
 import {
   Table,
   TableBody,
@@ -37,13 +36,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Download, Columns, ChevronLeft, ChevronRight } from "lucide-react";
+import { RefreshCw, Columns, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchPlaceholder?: string;
-  exportFilename?: string;
   toolbar?: React.ReactNode;
 }
 
@@ -51,15 +50,16 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   searchPlaceholder = "Search…",
-  exportFilename = "export",
   toolbar,
 }: DataTableProps<TData, TValue>) {
+  const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
   const [debouncedFilter, setDebouncedFilter] = React.useState("");
+  const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
     const t = setTimeout(() => setDebouncedFilter(globalFilter), 300);
@@ -82,16 +82,10 @@ export function DataTable<TData, TValue>({
     initialState: { pagination: { pageSize: 25 } },
   });
 
-  function exportCsv() {
-    const filtered = table.getFilteredRowModel().rows.map((row) => row.original);
-    const csv = Papa.unparse(filtered as object[]);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${exportFilename}-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  function handleRefresh() {
+    setRefreshing(true);
+    router.refresh();
+    setTimeout(() => setRefreshing(false), 800);
   }
 
   return (
@@ -105,9 +99,9 @@ export function DataTable<TData, TValue>({
         />
         {toolbar}
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={exportCsv}>
-            <Download size={14} />
-            <span className="hidden sm:inline">Export CSV</span>
+          <Button variant="outline" size="sm" className="h-8 gap-1" onClick={handleRefresh} disabled={refreshing}>
+            <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

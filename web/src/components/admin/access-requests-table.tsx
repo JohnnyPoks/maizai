@@ -265,7 +265,6 @@ export function AccessRequestsTable({ data }: { data: AccessRequestRow[] }) {
       columns={columns}
       data={data}
       searchPlaceholder="Search requests…"
-      exportFilename="access-requests"
     />
   );
 }
