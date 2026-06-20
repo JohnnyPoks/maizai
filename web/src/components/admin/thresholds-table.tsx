@@ -111,7 +111,7 @@ function EditThresholdDialog({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              Edit threshold — {diseaseLabels[threshold.diseaseClass]}
+              Edit threshold: {diseaseLabels[threshold.diseaseClass]}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">

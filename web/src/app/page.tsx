@@ -74,7 +74,7 @@ export default function LandingPage() {
                   <span className="text-brand-500">before it spreads.</span>
                 </h1>
                 <p className="text-lg text-earth-600 mb-10 leading-relaxed max-w-lg">
-                  MaizAI puts a trained AI in the farmer&apos;s pocket. Snap a leaf, get a diagnosis in seconds — even without internet. Designed for the realities of smallholder farming in Cameroon.
+                  MaizAI puts a trained AI in the farmer&apos;s pocket. Snap a leaf and get a diagnosis in seconds, even without an internet connection. Designed for the realities of smallholder farming in Cameroon.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <a href="#download">
@@ -143,7 +143,7 @@ export default function LandingPage() {
                   <span className="text-orange-400">35% of their maize harvest.</span>
                 </h2>
                 <p className="text-white/50 text-xs mt-3">
-                  <sup>*</sup> Frontiers in Plant Science, 2026 — maize disease &amp; pest detection in sub-Saharan Africa.
+                  <sup>*</sup> Frontiers in Plant Science, 2026. Maize disease and pest detection in sub-Saharan Africa.
                 </p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function LandingPage() {
                     step: "2",
                     icon: Cpu,
                     title: "On-device AI classifies",
-                    body: "The TFLite model runs locally — no internet required. Four classes: Healthy, Common Rust, Gray Leaf Spot, Blight.",
+                    body: "The TFLite model runs locally, so no internet is required. Four classes: Healthy, Common Rust, Gray Leaf Spot, Blight.",
                   },
                   {
                     step: "3",
@@ -214,7 +214,7 @@ export default function LandingPage() {
                     step: "4",
                     icon: Leaf,
                     title: "Recommendation issued",
-                    body: "The rule engine issues a targeted intervention — spray now, monitor, irrigate, or remove — matched to field conditions.",
+                    body: "The rule engine issues a targeted intervention (spray now, monitor, irrigate, or remove) matched to field conditions.",
                   },
                 ].map((s, i) => (
                   <div key={s.step} className="relative">
@@ -258,12 +258,12 @@ export default function LandingPage() {
                 Environmental context, direct from the field.
               </h2>
               <p className="text-earth-600 text-sm leading-relaxed mb-6">
-                The custom ESP32 node sits in the soil between maize rows, continuously monitoring soil moisture, ambient temperature, and relative humidity. It broadcasts live readings locally when the farmer is on plot, and syncs to the cloud via MQTT when they are away — so the rule engine always has context.
+                The custom ESP32 node sits in the soil between maize rows, continuously monitoring soil moisture, ambient temperature, and relative humidity. It broadcasts live readings locally when the farmer is on plot, and syncs to the cloud via MQTT when they are away, so the rule engine always has context.
               </p>
               <ul className="space-y-2.5">
                 {[
                   "Soil moisture · Temperature · Humidity",
-                  "mDNS local discovery — no cloud needed on-plot",
+                  "mDNS local discovery, no cloud needed on-plot",
                   "MQTT → HiveMQ Cloud when farmer is away",
                   "Low-power, field-deployable design",
                 ].map((item) => (
@@ -333,7 +333,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-5xl">
             <div className="text-center mb-14">
               <h2 className="text-2xl md:text-3xl font-bold text-brand-900">Three-layer architecture</h2>
-              <p className="text-earth-500 mt-2">Mobile · Cloud · Sensor — each doing what it does best.</p>
+              <p className="text-earth-500 mt-2">Mobile, cloud, and sensor, each doing what it does best.</p>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               {[

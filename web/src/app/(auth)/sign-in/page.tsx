@@ -196,7 +196,7 @@ export default function SignInPage() {
             <p className="text-sm text-earth-500 leading-relaxed">
               The request for{" "}
               <span className="font-medium text-brand-800">{email}</span> is still
-              being reviewed. Please check back in 24–48 hours.
+              being reviewed. Please check back in 24 to 48 hours.
             </p>
           </div>
           <div className="space-y-2 pt-1">
@@ -351,7 +351,7 @@ export default function SignInPage() {
             onClick={handleActivate}
           >
             {loading && <Loader2 size={15} className="animate-spin mr-2" />}
-            I have saved this password — sign me in
+            I have saved this password, sign me in
           </Button>
         </div>
       </AuthShell>

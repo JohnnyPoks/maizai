@@ -42,10 +42,12 @@ pnpm db:seed
 pnpm dev
 ```
 
-The app is available at `http://localhost:3000`.  
-Sign in at `http://localhost:3000/sign-in` with:
-- **E-mail:** `admin@maizai.cm`
-- **Password:** `MaizAI@2026`
+The app is available at `http://localhost:3000`.
+
+The seed creates a super-admin from the `SUPER_ADMIN_EMAIL` and
+`SUPER_ADMIN_PASSWORD` values in your `.env.local`. Set them before running
+`pnpm db:seed`, then sign in at `http://localhost:3000/sign-in`. Credentials are
+never committed — keep them in your local environment only.
 
 ## Environment variables
 

@@ -1,16 +1,19 @@
 import { useEffect } from "react";
-import { Stack, router } from "expo-router";
+import { Stack, router, usePathname } from "expo-router";
 import { useAuthStore } from "@/stores/auth-store";
 
 export default function AuthLayout() {
   const { token, mustChangePassword, isLoading } = useAuthStore();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (isLoading) return;
-    if (token && !mustChangePassword) {
+    // Logged-in users may still open change-password voluntarily from Settings.
+    const onChangePassword = pathname.includes("change-password");
+    if (token && !mustChangePassword && !onChangePassword) {
       router.replace("/(tabs)/capture");
     }
-  }, [token, mustChangePassword, isLoading]);
+  }, [token, mustChangePassword, isLoading, pathname]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

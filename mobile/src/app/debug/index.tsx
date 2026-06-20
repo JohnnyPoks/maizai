@@ -16,6 +16,15 @@ import { client, getDefaultBaseUrl } from "@/lib/api";
 import { saveDebugApiUrl, getDebugApiUrl } from "@/lib/debug-http";
 import { debugStore } from "@/lib/debug-store";
 
+// EXPO_PUBLIC_* values are inlined at build time, so we can read them directly.
+const PUBLIC_ENV: [string, string | undefined][] = [
+  ["EXPO_PUBLIC_API_URL", process.env.EXPO_PUBLIC_API_URL],
+  ["EXPO_PUBLIC_DEBUG_MODE", process.env.EXPO_PUBLIC_DEBUG_MODE],
+  ["EXPO_PUBLIC_SUPPORT_EMAIL", process.env.EXPO_PUBLIC_SUPPORT_EMAIL],
+  ["EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME", process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME],
+  ["EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET", process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET],
+];
+
 export default function DebugDashboard() {
   const [currentUrl, setCurrentUrl] = useState(client.defaults.baseURL ?? getDefaultBaseUrl());
   const [urlInput, setUrlInput] = useState("");
@@ -76,6 +85,19 @@ export default function DebugDashboard() {
             <Text style={styles.overrideBadgeText}>URL OVERRIDDEN</Text>
           </View>
         )}
+      </View>
+
+      {/* Public environment variables */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Environment Variables</Text>
+        {PUBLIC_ENV.map(([key, value]) => (
+          <View key={key} style={styles.envRow}>
+            <Text style={styles.envKey}>{key}</Text>
+            <Text style={styles.envVal} numberOfLines={2}>
+              {value && value.length > 0 ? value : "(not set)"}
+            </Text>
+          </View>
+        ))}
       </View>
 
       {/* URL override */}
@@ -214,6 +236,9 @@ const styles = StyleSheet.create({
   section: { gap: 8 },
   sectionTitle: { fontSize: 12, fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: 0.8 },
   hint: { fontSize: 12, color: "#666", lineHeight: 18 },
+  envRow: { backgroundColor: "#1c1c1e", borderRadius: 8, padding: 10, gap: 2 },
+  envKey: { fontSize: 11, color: "#4ade80", fontFamily: "monospace" },
+  envVal: { fontSize: 12, color: "#e5e5e5", fontFamily: "monospace" },
   input: {
     backgroundColor: "#1c1c1e",
     borderRadius: 8,

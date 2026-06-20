@@ -32,7 +32,7 @@ export const strings = {
   },
   capture: {
     title: "Capture",
-    instruction: "Centre a maize leaf inside the frame",
+    instruction: "Point the camera at a maize leaf and tap to capture",
     analysing: "Analysing leaf…",
     cameraPermissionTitle: "Camera access required",
     cameraPermissionBody:

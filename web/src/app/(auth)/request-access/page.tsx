@@ -60,8 +60,8 @@ export default function RequestAccessPage() {
             </div>
             <h2 className="text-xl font-semibold text-brand-900">Request submitted</h2>
             <p className="text-sm text-earth-600 max-w-xs mx-auto">
-              Your request has been submitted. Return to the sign-in page in 24–48 hours and enter
-              your email — your status will be shown.
+              Your request has been submitted. Return to the sign-in page in 24 to 48 hours and enter
+              your email to see your status.
             </p>
             <Link href="/sign-in">
               <Button variant="outline" className="mt-4">
@@ -107,7 +107,7 @@ export default function RequestAccessPage() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl text-brand-900">Request access to the MaizAI dashboard</CardTitle>
             <CardDescription>
-              Fill in the form below. We will review your request within 24–48 hours. Return to
+              Fill in the form below. We will review your request within 24 to 48 hours. Return to
               the sign-in page and enter your email to check your status.
             </CardDescription>
           </CardHeader>

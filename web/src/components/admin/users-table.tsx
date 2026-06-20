@@ -86,7 +86,7 @@ function EditRoleDialog({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit user — {user.fullName}</DialogTitle>
+            <DialogTitle>Edit user: {user.fullName}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-earth-600">{user.email}</p>

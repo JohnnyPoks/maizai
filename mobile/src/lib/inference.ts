@@ -3,7 +3,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
 // jpeg-js is a pure-JS JPEG decoder — no native bindings required
 import jpegJs from "jpeg-js";
-import { dlog, dlogWarn } from "./debug-store";
+import { dlog, dlogWarn, dlogError } from "./debug-store";
 
 let modelInstance: TensorflowModel | null = null;
 
@@ -25,23 +25,44 @@ export interface ClassificationResult {
 
 const INPUT_SIZE = 224;
 
+// Guards against concurrent loads (startup + first capture racing).
+let loadingPromise: Promise<void> | null = null;
+
 export async function initialiseModel(): Promise<void> {
   if (modelInstance) return;
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const modelAsset = require("../../assets/models/maize_classifier.tflite");
-  modelInstance = await loadTensorflowModel(modelAsset, []);
-  const input = modelInstance.inputs[0];
-  const output = modelInstance.outputs[0];
-  dlog(
-    "inference",
-    `Model loaded. input=${input?.dataType} ${JSON.stringify(input?.shape)} ` +
-      `output=${output?.dataType} ${JSON.stringify(output?.shape)}`,
-  );
+  if (loadingPromise) return loadingPromise;
+
+  loadingPromise = (async () => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const modelAsset = require("../../assets/models/maize_classifier.tflite");
+      const model = await loadTensorflowModel(modelAsset, []);
+      modelInstance = model;
+      const input = model.inputs[0];
+      const output = model.outputs[0];
+      dlog(
+        "inference",
+        `Model loaded. input=${input?.dataType} ${JSON.stringify(input?.shape)} ` +
+          `output=${output?.dataType} ${JSON.stringify(output?.shape)}`,
+      );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      dlogError("inference", `Model load failed: ${msg}`);
+      throw new Error(`Could not load the AI model. ${msg}`);
+    } finally {
+      loadingPromise = null;
+    }
+  })();
+
+  return loadingPromise;
 }
 
 export async function classifyLeaf(imageUri: string): Promise<ClassificationResult> {
+  // Lazily (re)initialise so capture works even if the startup load failed,
+  // and so any load error surfaces here with a real message.
+  await initialiseModel();
   if (!modelInstance) {
-    throw new Error("Model not initialised. Call initialiseModel() first.");
+    throw new Error("The AI model is not available.");
   }
 
   const inputSpec = modelInstance.inputs[0];

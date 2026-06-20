@@ -16,8 +16,8 @@ maizai/
 ## Subproject documentation
 
 - [ai/README.md](ai/README.md) — Disease classifier training pipeline
-- web/README.md — (created in web session)
-- mobile/README.md — (created in mobile session)
+- [web/README.md](web/README.md) — Next.js cloud back-end and admin UI
+- [mobile/README.md](mobile/README.md) — React Native (Expo) Android mobile app
 - [firmware/README.md](firmware/README.md) — Sensor node firmware
 
 ## Academic context

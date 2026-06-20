@@ -89,23 +89,24 @@ class DebugStore {
 
 export const debugStore = new DebugStore();
 
+// Logging is active in development AND in debug-enabled preview builds
+// (__DEV__ is false in EAS preview/production, so the FAB env flag matters).
+const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
+
 export function dlog(tag: string, message: string) {
-  if (__DEV__) {
-    console.warn(`[${tag}] ${message}`);
-    debugStore.log('info', tag, message);
-  }
+  if (!debugEnabled) return;
+  console.warn(`[${tag}] ${message}`);
+  debugStore.log('info', tag, message);
 }
 
 export function dlogWarn(tag: string, message: string) {
-  if (__DEV__) {
-    console.warn(`[${tag}] ${message}`);
-    debugStore.log('warn', tag, message);
-  }
+  if (!debugEnabled) return;
+  console.warn(`[${tag}] ${message}`);
+  debugStore.log('warn', tag, message);
 }
 
 export function dlogError(tag: string, message: string) {
-  if (__DEV__) {
-    console.error(`[${tag}] ${message}`);
-    debugStore.log('error', tag, message);
-  }
+  if (!debugEnabled) return;
+  console.error(`[${tag}] ${message}`);
+  debugStore.log('error', tag, message);
 }

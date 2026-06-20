@@ -4,18 +4,27 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const passwordHash = await bcrypt.hash("MaizAI@2026", 12);
+  // Credentials come from the environment — never hard-code them here.
+  const email = process.env.SUPER_ADMIN_EMAIL;
+  const password = process.env.SUPER_ADMIN_PASSWORD;
 
-  await prisma.user.upsert({
-    where: { email: "admin@maizai.cm" },
-    update: { role: Role.SUPER_ADMIN },
-    create: {
-      email: "admin@maizai.cm",
-      passwordHash,
-      fullName: "MaizAI Administrator",
-      role: Role.SUPER_ADMIN,
-    },
-  });
+  if (!email || !password) {
+    console.warn(
+      "Skipping super-admin seed: set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env.local to create one.",
+    );
+  } else {
+    const passwordHash = await bcrypt.hash(password, 12);
+    await prisma.user.upsert({
+      where: { email },
+      update: { role: Role.SUPER_ADMIN },
+      create: {
+        email,
+        passwordHash,
+        fullName: "MaizAI Administrator",
+        role: Role.SUPER_ADMIN,
+      },
+    });
+  }
 
   const thresholds = [
     {

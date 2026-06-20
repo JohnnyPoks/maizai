@@ -10,14 +10,16 @@
       "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_DEBUG_MODE": "true",
-        "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "johnpokam95@gmail.com"
       }
     },
     "production": {
       "android": { "buildType": "apk" },
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://maizai.vercel.app",
+        "EXPO_PUBLIC_SUPPORT_EMAIL": "johnpokam95@gmail.com"
       }
     }
   },

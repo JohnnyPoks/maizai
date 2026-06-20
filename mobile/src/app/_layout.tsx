@@ -11,6 +11,7 @@ import { initialiseModel } from "@/lib/inference";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { DebugFab } from "@/components/shared/debug-fab";
 import { attachDebugInterceptor, loadDebugApiUrl } from "@/lib/debug-http";
+import { dlogError } from "@/lib/debug-store";
 
 // Keep the native splash visible until auth is hydrated from storage.
 SplashScreen.preventAutoHideAsync();
@@ -27,7 +28,9 @@ export default function RootLayout() {
 
   useEffect(() => {
     initDatabase();
-    initialiseModel().catch((err) => console.error("Model init failed:", err));
+    initialiseModel().catch((err) =>
+      dlogError("inference", `Startup model init failed: ${err?.message ?? err}`),
+    );
     hydrateFromStorage();
     const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
     if (debugEnabled) {

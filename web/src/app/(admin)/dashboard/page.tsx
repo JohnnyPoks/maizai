@@ -130,7 +130,7 @@ export default async function DashboardPage() {
           <Card className="border-brand-100 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-semibold text-brand-800">
-                Sensor Readings — Last 24 h
+                Sensor Readings (last 24 h)
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-0">
