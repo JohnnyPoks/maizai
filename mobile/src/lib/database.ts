@@ -58,6 +58,12 @@ CREATE INDEX IF NOT EXISTS idx_sensor_recorded ON sensor_readings(node_id, recor
 
 export function initDatabase(): void {
   db.execSync(SCHEMA_SQL);
+  // Lightweight migrations for columns added after first release.
+  try {
+    db.execSync("ALTER TABLE classifications ADD COLUMN probabilities TEXT");
+  } catch {
+    // Column already exists — ignore.
+  }
 }
 
 // ── Captures ─────────────────────────────────────────────────────────────────
@@ -130,12 +136,13 @@ export function clearAllCaptures(): void {
 
 export function insertClassification(c: Omit<Classification, "syncStatus">): void {
   db.runSync(
-    `INSERT INTO classifications (id, capture_id, disease_class, confidence, inference_source, classified_at, sync_status)
-     VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
+    `INSERT INTO classifications (id, capture_id, disease_class, confidence, probabilities, inference_source, classified_at, sync_status)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
     c.id,
     c.captureId,
     c.diseaseClass,
     c.confidence,
+    c.probabilities ? JSON.stringify(c.probabilities) : null,
     c.inferenceSource,
     c.classifiedAt,
   );
@@ -211,11 +218,20 @@ function rowToCapture(row: Record<string, unknown>): Capture {
 }
 
 function rowToClassification(row: Record<string, unknown>): Classification {
+  let probabilities: Classification["probabilities"] = null;
+  if (row.probabilities) {
+    try {
+      probabilities = JSON.parse(row.probabilities as string);
+    } catch {
+      probabilities = null;
+    }
+  }
   return {
     id: row.id as string,
     captureId: row.capture_id as string,
     diseaseClass: row.disease_class as Classification["diseaseClass"],
     confidence: row.confidence as number,
+    probabilities,
     inferenceSource: row.inference_source as "ON_DEVICE",
     classifiedAt: row.classified_at as number,
     syncStatus: row.sync_status as SyncStatus,

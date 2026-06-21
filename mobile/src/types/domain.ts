@@ -22,6 +22,7 @@ export interface Classification {
   captureId: string;
   diseaseClass: DiseaseClass;
   confidence: number;
+  probabilities: Record<DiseaseClass, number> | null;
   inferenceSource: InferenceSource;
   classifiedAt: number;
   syncStatus: SyncStatus;

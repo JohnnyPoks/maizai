@@ -18,6 +18,7 @@ import {
 } from "@/lib/database";
 import { generateRecommendation, getCachedThresholds } from "@/lib/rule-engine";
 import { triggerBackgroundSync } from "@/lib/sync";
+import { getCaptureLocation } from "@/lib/location";
 import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
 import { dlogError } from "@/lib/debug-store";
@@ -100,12 +101,15 @@ export default function CaptureScreen() {
     const recommendationId = await generateId();
     const now = Date.now();
 
+    // Opt-in geotag (returns null unless the farmer enabled it in Settings).
+    const coords = await getCaptureLocation();
+
     insertCapture({
       id: captureId,
       localUri: uri,
       capturedAt: now,
-      gpsLatitude: null,
-      gpsLongitude: null,
+      gpsLatitude: coords?.latitude ?? null,
+      gpsLongitude: coords?.longitude ?? null,
       syncStatus: "pending",
     });
 
@@ -114,6 +118,7 @@ export default function CaptureScreen() {
       captureId,
       diseaseClass: result.diseaseClass,
       confidence: result.confidence,
+      probabilities: result.probabilities,
       inferenceSource: "ON_DEVICE",
       classifiedAt: now,
     });

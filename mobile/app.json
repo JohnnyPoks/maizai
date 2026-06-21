@@ -59,6 +59,12 @@
         }
       ],
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "MaizAI can attach your location to captures to help map disease outbreaks. This is optional and off by default."
+        }
+      ],
+      [
         "react-native-fast-tflite",
         {
           "enableCoreMLDelegate": false,

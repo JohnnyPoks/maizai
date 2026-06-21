@@ -116,7 +116,7 @@ export default function ResultScreen() {
                   {strings.diseases[cls]}
                 </Text>
                 <ConfidenceBar
-                  value={(detail as unknown as Record<string, unknown>)[cls as string] as number ?? 0}
+                  value={classification.probabilities?.[cls] ?? 0}
                   compact
                 />
               </View>

@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity, Linking } from "react-native";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { View, Text, ScrollView, StyleSheet, Alert, TouchableOpacity, Linking, Switch } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuthStore } from "@/stores/auth-store";
@@ -7,6 +7,7 @@ import { useSync } from "@/hooks/use-sync";
 import { clearAllCaptures } from "@/lib/database";
 import { api } from "@/lib/api";
 import { cacheThresholds } from "@/lib/rule-engine";
+import { isLocationSharingEnabled, setLocationSharingEnabled } from "@/lib/location";
 import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
 import Constants from "expo-constants";
@@ -15,6 +16,16 @@ export default function SettingsScreen() {
   const { user, signOut } = useAuthStore();
   const { sync, isSyncing, lastSyncAt, pendingCount } = useSync();
   const [refreshingThresholds, setRefreshingThresholds] = useState(false);
+  const [shareLocation, setShareLocation] = useState(false);
+
+  useEffect(() => {
+    isLocationSharingEnabled().then(setShareLocation);
+  }, []);
+
+  async function toggleLocation(value: boolean) {
+    setShareLocation(value);
+    await setLocationSharingEnabled(value);
+  }
 
   function confirmSignOut() {
     Alert.alert(strings.settings.signOut, strings.settings.signOutConfirm, [
@@ -124,6 +135,22 @@ export default function SettingsScreen() {
         />
       </Section>
 
+      {/* Privacy */}
+      <Section title="Privacy">
+        <View style={styles.row}>
+          <MaterialCommunityIcons name="map-marker-outline" size={20} color={colors.surface.textMuted} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.rowLabel, { color: colors.surface.text }]}>Share location with captures</Text>
+            <Text style={styles.rowHint}>Adds GPS coordinates to help map disease outbreaks. Off by default.</Text>
+          </View>
+          <Switch
+            value={shareLocation}
+            onValueChange={toggleLocation}
+            trackColor={{ true: colors.brand[400] }}
+          />
+        </View>
+      </Section>
+
       {/* About */}
       <Section title={strings.settings.about}>
         <Row icon="information-outline" label={`${strings.settings.version} ${version}`} onPress={onVersionTap} />
@@ -217,4 +244,5 @@ const styles = StyleSheet.create({
     minHeight: 48,
   },
   rowLabel: { flex: 1, fontSize: 15 },
+  rowHint: { fontSize: 12, color: colors.surface.textMuted, marginTop: 2 },
 });
