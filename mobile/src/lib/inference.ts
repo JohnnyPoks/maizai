@@ -6,6 +6,15 @@ import { Asset } from "expo-asset";
 // jpeg-js is a pure-JS JPEG decoder — no native bindings required
 import jpegJs from "jpeg-js";
 import { dlog, dlogWarn, dlogError } from "./debug-store";
+import { assessLeafImage } from "./image-quality";
+
+/** Thrown when the captured image does not look like a maize leaf. */
+export class ImageQualityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ImageQualityError";
+  }
+}
 
 let modelInstance: TensorflowModel | null = null;
 
@@ -89,9 +98,16 @@ export async function classifyLeaf(imageUri: string): Promise<ClassificationResu
 
   // Step 2: Decode JPEG → interleaved RGB bytes
   const rgb = await decodeRgb(resized.uri);
-  const pixelCount = INPUT_SIZE * INPUT_SIZE * 3;
-  if (rgb.length < pixelCount) {
-    throw new Error(`Decoded image too small: got ${rgb.length} bytes, expected ${pixelCount}.`);
+  const byteCount = INPUT_SIZE * INPUT_SIZE * 3;
+  if (rgb.length < byteCount) {
+    throw new Error(`Decoded image too small: got ${rgb.length} bytes, expected ${byteCount}.`);
+  }
+
+  // Step 2b: Quality gate — reject obvious non-leaf inputs before inference.
+  const quality = assessLeafImage(rgb, INPUT_SIZE * INPUT_SIZE);
+  if (!quality.ok) {
+    dlog("inference", "Rejected by quality gate (not a maize leaf)");
+    throw new ImageQualityError(quality.reason ?? "Could not detect a maize leaf.");
   }
 
   // Step 3: Build the input tensor in whatever dtype the model expects.
@@ -100,7 +116,7 @@ export async function classifyLeaf(imageUri: string): Promise<ClassificationResu
   // Step 4: Run inference
   const start = performance.now();
   const output = modelInstance.runSync([inputBuffer]);
-  const inferenceTimeMs = Math.round(performance.now() - start);
+  const inferenceTimeMs = Math.round((performance.now() - start) * 10) / 10;
 
   // Step 5: Interpret output according to its dtype
   const outputSpec = modelInstance.outputs[0];

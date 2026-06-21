@@ -18,38 +18,31 @@ export default function OpengraphImage() {
           height: "100%",
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
           justifyContent: "center",
-          padding: "80px",
+          gap: 36,
           background: "linear-gradient(135deg, #0f3d28 0%, #2f7350 55%, #3d8b5c 100%)",
           color: "white",
           fontFamily: "sans-serif",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 24, marginBottom: 40 }}>
-          <div
-            style={{
-              width: 112,
-              height: 112,
-              borderRadius: 28,
-              background: "white",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO_DATA_URI} width={72} height={72} alt="MaizAI logo" />
-          </div>
-          <div style={{ fontSize: 64, fontWeight: 800, letterSpacing: -1 }}>MaizAI</div>
+        <div
+          style={{
+            width: 200,
+            height: 200,
+            borderRadius: 44,
+            background: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_DATA_URI} width={132} height={132} alt="MaizAI logo" />
         </div>
-        <div style={{ fontSize: 60, fontWeight: 700, lineHeight: 1.1, maxWidth: 900 }}>
-          Detect maize disease before it spreads.
-        </div>
-        <div style={{ fontSize: 30, marginTop: 32, color: "rgba(255,255,255,0.85)", maxWidth: 880 }}>
-          On-device AI for Cameroonian smallholder farmers. A diagnosis in seconds, even offline.
-        </div>
-        <div style={{ fontSize: 24, marginTop: 48, color: "rgba(255,255,255,0.7)" }}>
-          Open source · Android · maizai.vercel.app
+        <div style={{ fontSize: 84, fontWeight: 800, letterSpacing: -2 }}>MaizAI</div>
+        <div style={{ fontSize: 30, color: "rgba(255,255,255,0.85)" }}>
+          Maize disease detection
         </div>
       </div>
     ),

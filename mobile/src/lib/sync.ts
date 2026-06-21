@@ -1,6 +1,7 @@
 import { isOnline } from "./network";
 import { uploadToCloudinary } from "./cloudinary";
 import { api } from "./api";
+import { dlog, dlogError } from "./debug-store";
 import {
   getPendingCaptures,
   getClassificationForCapture,
@@ -17,7 +18,14 @@ export interface SyncResult {
 }
 
 export async function syncPendingCaptures(): Promise<SyncResult> {
-  if (_isSyncing || !isOnline()) return { synced: 0, failed: 0 };
+  if (_isSyncing) {
+    dlog("sync", "Already syncing — skipped");
+    return { synced: 0, failed: 0 };
+  }
+  if (!isOnline()) {
+    dlog("sync", "Offline — sync deferred");
+    return { synced: 0, failed: 0 };
+  }
 
   _isSyncing = true;
   let synced = 0;
@@ -25,6 +33,7 @@ export async function syncPendingCaptures(): Promise<SyncResult> {
 
   try {
     const pending = getPendingCaptures();
+    dlog("sync", `Starting sync of ${pending.length} pending capture(s)`);
 
     for (const capture of pending) {
       try {
@@ -56,11 +65,15 @@ export async function syncPendingCaptures(): Promise<SyncResult> {
         // 4. Mark local capture as synced
         markCaptureSynced(capture.id, upload.secure_url, upload.public_id);
         synced++;
+        dlog("sync", `Synced capture ${capture.id}`);
       } catch (err) {
-        markCaptureFailed(capture.id, String(err));
+        const msg = err instanceof Error ? err.message : String(err);
+        markCaptureFailed(capture.id, msg);
         failed++;
+        dlogError("sync", `Capture ${capture.id} failed: ${msg}`);
       }
     }
+    dlog("sync", `Sync finished: ${synced} synced, ${failed} failed`);
   } finally {
     _isSyncing = false;
   }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { AlreadySignedIn } from "@/components/auth/already-signed-in";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
@@ -11,9 +13,12 @@ import { Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 
 export default function RequestAccessPage() {
+  const { status } = useSession();
   const [state, setState] = useState<"form" | "success" | "pending">("form");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  if (status === "authenticated") return <AlreadySignedIn />;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

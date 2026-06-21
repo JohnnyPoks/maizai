@@ -82,6 +82,18 @@ const FALLBACK_RECOMMENDATIONS: Record<DiseaseClass, Recommendation> = {
   },
 };
 
+// Confidence above this is treated as a confident call; below it the advice
+// text is hedged so farmers know to treat the diagnosis with some caution.
+const CONFIDENT_THRESHOLD = 0.85;
+
+function hedge(rec: Recommendation, confidence: number): Recommendation {
+  if (confidence >= CONFIDENT_THRESHOLD) return rec;
+  return {
+    ...rec,
+    adviceText: `The model is moderately confident in this result. ${rec.adviceText}`,
+  };
+}
+
 export function generateRecommendation(
   classification: { diseaseClass: DiseaseClass; confidence: number },
   sensorContext: SensorContext | null,
@@ -92,7 +104,7 @@ export function generateRecommendation(
   }
 
   if (!sensorContext) {
-    return FALLBACK_RECOMMENDATIONS[classification.diseaseClass];
+    return hedge(FALLBACK_RECOMMENDATIONS[classification.diseaseClass], classification.confidence);
   }
 
   // Find the highest-urgency matching threshold for this disease
@@ -110,16 +122,19 @@ export function generateRecommendation(
       return aboveMin && belowMax;
     });
     if (match) {
-      return {
-        adviceType: match.adviceType,
-        adviceText: match.adviceText,
-        urgencyLevel: match.urgencyLevel,
-      };
+      return hedge(
+        {
+          adviceType: match.adviceType,
+          adviceText: match.adviceText,
+          urgencyLevel: match.urgencyLevel,
+        },
+        classification.confidence,
+      );
     }
   }
 
   // No threshold matched; fall back to default for this disease
-  return FALLBACK_RECOMMENDATIONS[classification.diseaseClass];
+  return hedge(FALLBACK_RECOMMENDATIONS[classification.diseaseClass], classification.confidence);
 }
 
 export async function getCachedThresholds(): Promise<ApiRuleThreshold[]> {

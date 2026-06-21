@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { View, FlatList, StyleSheet, Text, Alert, RefreshControl } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { getAllCaptures, getCaptureWithDetails, deleteCapture } from "@/lib/database";
 import { HistoryListItem } from "@/components/history/history-list-item";
@@ -19,31 +19,42 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "pending", label: strings.history.filterPending },
 ];
 
+function loadItems(currentFilter: Filter): CaptureWithDetails[] {
+  const captures = getAllCaptures(currentFilter === "pending" ? "pending" : undefined);
+  return captures
+    .map((c) => getCaptureWithDetails(c.id))
+    .filter((d): d is CaptureWithDetails => {
+      if (!d) return false;
+      if (currentFilter === "healthy") return d.classification.diseaseClass === "Healthy";
+      if (currentFilter === "diseased") return d.classification.diseaseClass !== "Healthy";
+      return true;
+    });
+}
+
 export default function HistoryScreen() {
   const [filter, setFilter] = useState<Filter>("all");
   const [refreshing, setRefreshing] = useState(false);
+  const [items, setItems] = useState<CaptureWithDetails[]>([]);
   const { sync } = useSync();
 
-  function loadItems(): CaptureWithDetails[] {
-    const captures = getAllCaptures(filter === "pending" ? "pending" : undefined);
-    return captures
-      .map((c) => getCaptureWithDetails(c.id))
-      .filter((d): d is CaptureWithDetails => {
-        if (!d) return false;
-        if (filter === "healthy") return d.classification.diseaseClass === "Healthy";
-        if (filter === "diseased") return d.classification.diseaseClass !== "Healthy";
-        return true;
-      });
-  }
+  const reload = useCallback(() => {
+    setItems(loadItems(filter));
+  }, [filter]);
 
-  const [items, setItems] = useState<CaptureWithDetails[]>(loadItems);
+  // Reload when the filter changes and whenever the tab regains focus
+  // (e.g. after a new capture is saved).
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  useFocusEffect(reload);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
     await sync();
-    setItems(loadItems());
+    reload();
     setRefreshing(false);
-  }, [sync]);
+  }, [sync, reload]);
 
   function handleDelete(id: string) {
     Alert.alert(
@@ -75,10 +86,7 @@ export default function HistoryScreen() {
         {FILTERS.map((f) => (
           <TouchableOpacity
             key={f.key}
-            onPress={() => {
-              setFilter(f.key);
-              setItems(loadItems());
-            }}
+            onPress={() => setFilter(f.key)}
             style={[styles.chip, filter === f.key && styles.chipActive]}
           >
             <Text style={[styles.chipText, filter === f.key && styles.chipTextActive]}>

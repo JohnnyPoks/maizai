@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { AlreadySignedIn } from "@/components/auth/already-signed-in";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
@@ -88,11 +89,14 @@ function StatusShell({ children }: { children: React.ReactNode }) {
 
 export default function SignInPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [email, setEmail] = useState("");
   const [step, setStep] = useState<Step>({ name: "email" });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  if (status === "authenticated") return <AlreadySignedIn />;
 
   async function handleEmailSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

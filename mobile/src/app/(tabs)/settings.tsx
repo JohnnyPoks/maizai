@@ -61,7 +61,8 @@ export default function SettingsScreen() {
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onVersionTap = useCallback(() => {
-    if (!__DEV__) return;
+    const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
+    if (!debugEnabled) return;
     tapCount.current += 1;
     if (tapTimer.current) clearTimeout(tapTimer.current);
     if (tapCount.current >= 5) {

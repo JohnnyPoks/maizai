@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format, formatDistanceToNow } from "date-fns";
 import { FeedbackStatus, FeedbackType } from "@prisma/client";
-import { CheckCircle2, RotateCcw, Bug, Lightbulb, Download } from "lucide-react";
+import { CheckCircle2, RotateCcw, Bug, Lightbulb, Download, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 type FeedbackRow = {
@@ -23,10 +24,16 @@ type FeedbackRow = {
 
 export function FeedbackTable({ data }: { data: FeedbackRow[] }) {
   const router = useRouter();
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   async function toggle(id: string) {
-    await fetch(`/api/feedback/${id}`, { method: "PATCH" });
-    router.refresh();
+    setPendingId(id);
+    try {
+      await fetch(`/api/feedback/${id}`, { method: "PATCH" });
+      router.refresh();
+    } finally {
+      setPendingId(null);
+    }
   }
 
   function exportMarkdown() {
@@ -110,9 +117,12 @@ export function FeedbackTable({ data }: { data: FeedbackRow[] }) {
           variant="outline"
           size="sm"
           className="h-7 text-xs"
+          disabled={pendingId === row.original.id}
           onClick={() => toggle(row.original.id)}
         >
-          {row.original.status === "RESOLVED" ? (
+          {pendingId === row.original.id ? (
+            <><Loader2 size={12} className="mr-1 animate-spin" /> Saving…</>
+          ) : row.original.status === "RESOLVED" ? (
             <><RotateCcw size={12} className="mr-1" /> Reopen</>
           ) : (
             <><CheckCircle2 size={12} className="mr-1" /> Resolve</>

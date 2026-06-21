@@ -76,16 +76,18 @@ export function insertCapture(capture: Omit<Capture, "syncAttempts" | "lastSyncE
 }
 
 export function getPendingCaptures(): Capture[] {
+  // Retry failed uploads too, not just never-attempted ones.
   return db
     .getAllSync<Record<string, unknown>>(
-      `SELECT * FROM captures WHERE sync_status = 'pending' ORDER BY captured_at ASC LIMIT 20`,
+      `SELECT * FROM captures WHERE sync_status IN ('pending', 'failed') ORDER BY captured_at ASC LIMIT 20`,
     )
     .map(rowToCapture);
 }
 
 export function getAllCaptures(filter?: "Healthy" | "diseased" | "pending"): Capture[] {
   let sql = "SELECT * FROM captures";
-  if (filter === "pending") sql += " WHERE sync_status = 'pending'";
+  // "pending" in the UI means "not yet synced" (includes failed retries).
+  if (filter === "pending") sql += " WHERE sync_status != 'synced'";
   sql += " ORDER BY captured_at DESC";
   return db.getAllSync<Record<string, unknown>>(sql).map(rowToCapture);
 }

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { View, Text, StyleSheet, Alert, Linking } from "react-native";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useCamera } from "@/hooks/use-camera";
 import { useInference } from "@/hooks/use-inference";
+import { ImageQualityError } from "@/lib/inference";
 import { useSync } from "@/hooks/use-sync";
 import { CameraView } from "@/components/capture/camera-view";
 import { CaptureButton } from "@/components/capture/capture-button";
@@ -21,10 +23,13 @@ import { strings } from "@/strings";
 import { dlogError } from "@/lib/debug-store";
 import * as crypto from "expo-crypto";
 
+const CONFIDENCE_THRESHOLD = 0.7;
+
 export default function CaptureScreen() {
   const { cameraRef, permission, requestPermission, takePicture } = useCamera();
   const { classify, isRunning } = useInference();
   const { sync } = useSync();
+  const [busy, setBusy] = useState(false);
 
   if (!permission) return null;
 
@@ -48,6 +53,16 @@ export default function CaptureScreen() {
   }
 
   async function handleCapture() {
+    if (busy) return;
+    setBusy(true); // show the loading state immediately on tap
+    try {
+      await runCapture();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function runCapture() {
     const uri = await takePicture();
     if (!uri) {
       Alert.alert("Camera", "Could not capture an image. Please try again.");
@@ -60,9 +75,22 @@ export default function CaptureScreen() {
     try {
       result = await classify(uri);
     } catch (err) {
+      if (err instanceof ImageQualityError) {
+        Alert.alert("Capture rejected", err.message);
+        return;
+      }
       const msg = err instanceof Error ? err.message : String(err);
       dlogError("capture", `Classification failed: ${msg}`);
       Alert.alert("Analysis failed", msg);
+      return;
+    }
+
+    // Low-confidence guard: don't present or save an unclear result.
+    if (result.confidence < CONFIDENCE_THRESHOLD) {
+      Alert.alert(
+        "Result unclear",
+        "We could not confidently identify the leaf condition. Please capture again with the leaf centred and well-lit.",
+      );
       return;
     }
 
@@ -126,10 +154,10 @@ export default function CaptureScreen() {
 
       {/* Bottom overlay */}
       <View style={styles.bottomOverlay}>
-        {isRunning ? (
+        {busy || isRunning ? (
           <Spinner message={strings.capture.analysing} />
         ) : (
-          <CaptureButton onPress={handleCapture} disabled={isRunning} />
+          <CaptureButton onPress={handleCapture} disabled={busy} />
         )}
       </View>
     </View>

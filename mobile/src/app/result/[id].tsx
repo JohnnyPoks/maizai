@@ -44,7 +44,13 @@ export default function ResultScreen() {
 
   const { classification, recommendation } = detail;
   const isSynced = detail.syncStatus === "synced";
-  const capturedDate = new Date(detail.capturedAt).toLocaleString();
+  const capturedDate = new Date(detail.capturedAt).toLocaleString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   async function handleShare() {
     await Share.share({
@@ -136,7 +142,7 @@ export default function ResultScreen() {
         {/* Metadata */}
         <View style={styles.section}>
           <MetaRow icon="clock-outline" label={strings.result.capturedAt} value={capturedDate} />
-          <MetaRow icon="lightning-bolt" label="Inference" value={strings.result.inferenceTime(0)} />
+          <MetaRow icon="lightning-bolt" label="Analysis" value="On-device, under a second" />
           <MetaRow
             icon={isSynced ? "cloud-check" : "cloud-clock-outline"}
             label={strings.result.syncStatus}
