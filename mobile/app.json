@@ -59,6 +59,12 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "MaizAI can use a photo from your gallery to diagnose a maize leaf."
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "MaizAI can attach your location to captures to help map disease outbreaks. This is optional and off by default."

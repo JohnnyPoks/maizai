@@ -4,6 +4,11 @@ import { db } from "@/lib/db";
 import { uploadLeafImage } from "@/lib/cloudinary";
 import { syncCaptureSchema } from "@/lib/schemas";
 
+// The Cloudinary upload needs the Node.js runtime, and uploading + processing
+// an image can exceed the default function timeout, so allow up to 60s.
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 /**
  * Consolidated capture sync.
  *

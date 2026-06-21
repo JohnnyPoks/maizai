@@ -10,6 +10,7 @@ import { initDatabase } from "@/lib/database";
 import { initialiseModel } from "@/lib/inference";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { DebugFab } from "@/components/shared/debug-fab";
+import { useDebugUiStore } from "@/stores/debug-ui-store";
 import { attachDebugInterceptor, loadDebugApiUrl } from "@/lib/debug-http";
 import { dlogError } from "@/lib/debug-store";
 
@@ -36,6 +37,7 @@ export default function RootLayout() {
     if (debugEnabled) {
       attachDebugInterceptor();
       loadDebugApiUrl();
+      useDebugUiStore.getState().hydrate();
     }
   }, [hydrateFromStorage]);
 

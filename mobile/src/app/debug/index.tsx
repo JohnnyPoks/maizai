@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   Share,
+  Switch,
 } from "react-native";
 import { router } from "expo-router";
 import Constants from "expo-constants";
@@ -15,14 +16,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { client, getDefaultBaseUrl } from "@/lib/api";
 import { saveDebugApiUrl, getDebugApiUrl } from "@/lib/debug-http";
 import { debugStore } from "@/lib/debug-store";
+import { useDebugUiStore } from "@/stores/debug-ui-store";
 
 // EXPO_PUBLIC_* values are inlined at build time, so we can read them directly.
 const PUBLIC_ENV: [string, string | undefined][] = [
   ["EXPO_PUBLIC_API_URL", process.env.EXPO_PUBLIC_API_URL],
   ["EXPO_PUBLIC_DEBUG_MODE", process.env.EXPO_PUBLIC_DEBUG_MODE],
   ["EXPO_PUBLIC_SUPPORT_EMAIL", process.env.EXPO_PUBLIC_SUPPORT_EMAIL],
-  ["EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME", process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME],
-  ["EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET", process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET],
 ];
 
 export default function DebugDashboard() {
@@ -71,6 +71,8 @@ export default function DebugDashboard() {
   }, []);
 
   const version = Constants.expoConfig?.version ?? "0.1.0";
+  const fabVisible = useDebugUiStore((s) => s.fabVisible);
+  const setFabVisible = useDebugUiStore((s) => s.setFabVisible);
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
@@ -98,6 +100,20 @@ export default function DebugDashboard() {
             </Text>
           </View>
         ))}
+      </View>
+
+      {/* Appearance */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Appearance</Text>
+        <View style={styles.toggleRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.toggleLabel}>Floating debug button</Text>
+            <Text style={styles.hint}>
+              Drag it anywhere. When hidden, open this screen by tapping the version 5× in Settings.
+            </Text>
+          </View>
+          <Switch value={fabVisible} onValueChange={setFabVisible} />
+        </View>
       </View>
 
       {/* URL override */}
@@ -236,6 +252,8 @@ const styles = StyleSheet.create({
   section: { gap: 8 },
   sectionTitle: { fontSize: 12, fontWeight: "700", color: "#888", textTransform: "uppercase", letterSpacing: 0.8 },
   hint: { fontSize: 12, color: "#666", lineHeight: 18 },
+  toggleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  toggleLabel: { fontSize: 14, color: "#ddd", fontWeight: "600", marginBottom: 2 },
   envRow: { backgroundColor: "#1c1c1e", borderRadius: 8, padding: 10, gap: 2 },
   envKey: { fontSize: 11, color: "#4ade80", fontFamily: "monospace" },
   envVal: { fontSize: 12, color: "#e5e5e5", fontFamily: "monospace" },

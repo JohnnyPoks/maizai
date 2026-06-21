@@ -1,4 +1,4 @@
-import * as FileSystem from "expo-file-system/legacy";
+import * as ImageManipulator from "expo-image-manipulator";
 import { isOnline } from "./network";
 import { api } from "./api";
 import { useSyncStore } from "@/stores/sync-store";
@@ -59,14 +59,21 @@ export async function syncPendingCaptures(): Promise<SyncResult> {
           throw new Error("No recommendation found for capture");
         }
 
-        // Read the image as base64 and let the server handle the Cloudinary
-        // upload — no upload credentials live on the device.
-        const base64 = await FileSystem.readAsStringAsync(capture.localUri, {
-          encoding: FileSystem.EncodingType.Base64,
-        });
+        // Downscale + compress before upload. A raw phone photo is several MB,
+        // which times out on rural networks; the server caps images at 1024px
+        // anyway, so we send a ~1280px JPEG (typically a few hundred KB). The
+        // server handles the Cloudinary upload — no upload credentials on device.
+        const compressed = await ImageManipulator.manipulateAsync(
+          capture.localUri,
+          [{ resize: { width: 1280 } }],
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG, base64: true },
+        );
+        if (!compressed.base64) {
+          throw new Error("Failed to encode image for upload");
+        }
 
         const result = await api.syncCapture({
-          base64Image: `data:image/jpeg;base64,${base64}`,
+          base64Image: `data:image/jpeg;base64,${compressed.base64}`,
           capturedAt: new Date(capture.capturedAt).toISOString(),
           gpsLatitude: capture.gpsLatitude ?? undefined,
           gpsLongitude: capture.gpsLongitude ?? undefined,

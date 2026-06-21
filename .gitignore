@@ -69,6 +69,8 @@ CLAUDE.md
 
 # Internal project documentation — kept local, not published
 PROJECT_DOCUMENTATION.md
+raw_logs.txt
+*.zip
 
 # IDE
 .idea/

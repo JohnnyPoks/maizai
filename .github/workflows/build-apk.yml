@@ -1,10 +1,11 @@
 name: Build Android APK
 
-# Manual trigger only — open the Actions tab, pick this workflow and click
+# Manual trigger — open the Actions tab, pick this workflow and click
 # "Run workflow". The build runs on an Ubuntu runner (free & unlimited for
 # public repos), which avoids both the EAS build quota and the Windows
-# native-build path-space problem. The installable APK is uploaded as an
-# artifact you can download from the run summary.
+# native-build path-space problem. On success the installable APK is uploaded
+# as a run artifact AND published as a GitHub Release, which the website's
+# "Download for Android" button fetches automatically (latest release).
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +13,13 @@ on:
         description: "Enable in-app debug tools (debug screen/FAB)"
         type: boolean
         default: true
+      publish_release:
+        description: "Publish a GitHub Release with the APK"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -61,10 +69,34 @@ jobs:
         working-directory: mobile/android
         run: ./gradlew assembleRelease --no-daemon -Dorg.gradle.jvmargs=-Xmx4g
 
-      - name: Upload APK
+      - name: Read app version
+        id: ver
+        run: echo "version=$(node -p "require('./app.json').expo.version")" >> "$GITHUB_OUTPUT"
+
+      - name: Stage APK as maizai.apk
+        run: cp android/app/build/outputs/apk/release/app-release.apk maizai.apk
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: maizai-release-apk
-          path: mobile/android/app/build/outputs/apk/release/app-release.apk
+          path: mobile/maizai.apk
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish GitHub Release
+        if: ${{ inputs.publish_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}-build.${{ github.run_number }}
+          name: MaizAI v${{ steps.ver.outputs.version }} (build ${{ github.run_number }})
+          body: |
+            Automated build of MaizAI for Android.
+
+            - Version: ${{ steps.ver.outputs.version }}
+            - Build: ${{ github.run_number }}
+            - Commit: ${{ github.sha }}
+
+            Download `maizai.apk` below and tap it on your Android device to install.
+          files: mobile/maizai.apk
+          make_latest: true

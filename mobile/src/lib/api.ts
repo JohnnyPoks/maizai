@@ -64,9 +64,13 @@ export const api = {
 
   // Single round-trip: the server uploads the image to Cloudinary and persists
   // the image, classification and recommendation together. The image is sent
-  // as base64 so no Cloudinary credentials live on the device.
+  // as base64 so no Cloudinary credentials live on the device. A longer timeout
+  // is used here because the upload + Cloudinary processing (plus a possible
+  // Vercel cold start) can take well over the default 15s on a mobile network.
   async syncCapture(body: SyncCaptureRequest): Promise<SyncCaptureResponse> {
-    const { data } = await client.post<SyncCaptureResponse>("/api/sync/captures", body);
+    const { data } = await client.post<SyncCaptureResponse>("/api/sync/captures", body, {
+      timeout: 60_000,
+    });
     return data;
   },
 

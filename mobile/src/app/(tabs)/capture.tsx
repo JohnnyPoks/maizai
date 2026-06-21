@@ -1,7 +1,8 @@
-import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, Alert, Linking, ActivityIndicator } from "react-native";
+import { useState, useCallback, useRef } from "react";
+import { View, Text, StyleSheet, Alert, Linking, ActivityIndicator, TouchableOpacity } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCamera } from "@/hooks/use-camera";
 import { useInference } from "@/hooks/use-inference";
@@ -31,6 +32,9 @@ export default function CaptureScreen() {
   const { classify, isRunning } = useInference();
   const { sync, refreshPendingCount } = useSync();
   const [busy, setBusy] = useState(false);
+  // Guards re-entry during the capture/pick phase without showing the overlay
+  // (the overlay should only appear once we actually have an image to analyse).
+  const inFlight = useRef(false);
 
   // Keep the pending badge accurate whenever this screen regains focus
   // (e.g. after saving a capture on the result screen).
@@ -62,24 +66,45 @@ export default function CaptureScreen() {
   }
 
   async function handleCapture() {
-    if (busy) return;
-    setBusy(true); // show the loading state immediately on tap
+    if (inFlight.current) return;
+    inFlight.current = true;
     try {
-      await runCapture();
+      // Take the photo first (this is when the shutter sound/animation plays);
+      // only then show the analysing overlay, so loading and capture stay in sync.
+      const uri = await takePicture();
+      if (!uri) {
+        Alert.alert("Camera", "Could not capture an image. Please try again.");
+        return;
+      }
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      setBusy(true);
+      await analyseAndSave(uri);
     } finally {
       setBusy(false);
+      inFlight.current = false;
     }
   }
 
-  async function runCapture() {
-    const uri = await takePicture();
-    if (!uri) {
-      Alert.alert("Camera", "Could not capture an image. Please try again.");
-      return;
+  // Pick an existing photo from the gallery and run the same analysis. Useful
+  // for testing the model on clean images and for leaves photographed earlier.
+  async function handlePickFromGallery() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 1,
+      });
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+      setBusy(true);
+      await analyseAndSave(result.assets[0].uri);
+    } finally {
+      setBusy(false);
+      inFlight.current = false;
     }
+  }
 
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
+  async function analyseAndSave(uri: string) {
     let result;
     try {
       result = await classify(uri);
@@ -171,7 +196,21 @@ export default function CaptureScreen() {
 
       {/* Bottom overlay */}
       <View style={styles.bottomOverlay}>
-        <CaptureButton onPress={handleCapture} disabled={analysing} />
+        <View style={styles.captureRow}>
+          <View style={styles.sideSlot} />
+          <CaptureButton onPress={handleCapture} disabled={analysing} />
+          <View style={styles.sideSlot}>
+            <TouchableOpacity
+              style={styles.galleryButton}
+              onPress={handlePickFromGallery}
+              disabled={analysing}
+              accessibilityRole="button"
+              accessibilityLabel="Pick a photo from gallery"
+            >
+              <MaterialCommunityIcons name="image-multiple-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
 
       {/* Full-screen analysing overlay — clearer, branded loading experience */}
@@ -231,6 +270,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingBottom: 40,
     paddingTop: 20,
+  },
+  captureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    paddingHorizontal: 40,
+  },
+  sideSlot: { flex: 1, alignItems: "center", justifyContent: "center" },
+  galleryButton: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.4)",
   },
   loadingOverlay: {
     position: "absolute",
