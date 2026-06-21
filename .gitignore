@@ -67,6 +67,9 @@ firmware/.vscode/
 # Claude Code instructions — kept private
 CLAUDE.md
 
+# Internal project documentation — kept local, not published
+PROJECT_DOCUMENTATION.md
+
 # IDE
 .idea/
 *.iml

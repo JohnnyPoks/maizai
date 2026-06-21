@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
-import { View, FlatList, StyleSheet, Text, Alert, RefreshControl } from "react-native";
+import { View, FlatList, StyleSheet, Text, Alert, RefreshControl, ActivityIndicator } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getAllCaptures, getCaptureWithDetails, deleteCapture } from "@/lib/database";
 import { HistoryListItem } from "@/components/history/history-list-item";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useSync } from "@/hooks/use-sync";
+import { useSyncStore } from "@/stores/sync-store";
 import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
 import type { CaptureWithDetails } from "@/types/domain";
@@ -35,7 +37,8 @@ export default function HistoryScreen() {
   const [filter, setFilter] = useState<Filter>("all");
   const [refreshing, setRefreshing] = useState(false);
   const [items, setItems] = useState<CaptureWithDetails[]>([]);
-  const { sync } = useSync();
+  const { sync, refreshPendingCount } = useSync();
+  const { pendingCount, isSyncing, activeCaptureId } = useSyncStore();
 
   const reload = useCallback(() => {
     setItems(loadItems(filter));
@@ -47,7 +50,18 @@ export default function HistoryScreen() {
     reload();
   }, [reload]);
 
-  useFocusEffect(reload);
+  useFocusEffect(
+    useCallback(() => {
+      refreshPendingCount();
+      reload();
+    }, [refreshPendingCount, reload]),
+  );
+
+  // As each capture finishes uploading, the active id changes; reload so the
+  // per-item cloud icons flip to "synced" live.
+  useEffect(() => {
+    reload();
+  }, [activeCaptureId, reload]);
 
   const refresh = useCallback(async () => {
     setRefreshing(true);
@@ -114,8 +128,27 @@ export default function HistoryScreen() {
             subtitle={strings.history.emptyDetail}
           />
         }
-        contentContainerStyle={items.length === 0 ? { flex: 1 } : undefined}
+        contentContainerStyle={items.length === 0 ? { flex: 1 } : { paddingBottom: 96 }}
       />
+
+      {/* Floating sync button — shown while captures are awaiting upload. */}
+      {(pendingCount > 0 || isSyncing) && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={isSyncing ? undefined : sync}
+          activeOpacity={0.85}
+          disabled={isSyncing}
+        >
+          {isSyncing ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <MaterialCommunityIcons name="cloud-upload-outline" size={20} color="#fff" />
+          )}
+          <Text style={styles.fabText}>
+            {isSyncing ? "Uploading…" : `Sync ${pendingCount}`}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -141,4 +174,22 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.brand[50], borderColor: colors.brand[300] },
   chipText: { fontSize: 12, fontWeight: "600", color: colors.surface.textMuted },
   chipTextActive: { color: colors.brand[600] },
+  fab: {
+    position: "absolute",
+    right: 16,
+    bottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.brand[500],
+    paddingHorizontal: 18,
+    height: 48,
+    borderRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  fabText: { color: "#fff", fontSize: 14, fontWeight: "700" },
 });

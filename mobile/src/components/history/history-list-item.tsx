@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
 import { Badge } from "@/components/ui/badge";
+import { useSyncStore } from "@/stores/sync-store";
 import { strings } from "@/strings";
 import type { CaptureWithDetails } from "@/types/domain";
 
@@ -19,6 +20,7 @@ export function HistoryListItem({ item, onPress, onLongPress }: Props) {
     recommendation: item.recommendation,
   };
   const relativeTime = formatRelative(capture.capturedAt);
+  const uploading = useSyncStore((s) => s.activeCaptureId === capture.id);
 
   return (
     <TouchableOpacity
@@ -42,11 +44,15 @@ export function HistoryListItem({ item, onPress, onLongPress }: Props) {
           {Math.round(classification.confidence * 100)}% confidence · {strings.urgency[recommendation.urgencyLevel]} urgency
         </Text>
       </View>
-      <MaterialCommunityIcons
-        name={capture.syncStatus === "synced" ? "cloud-check" : "cloud-clock-outline"}
-        size={18}
-        color={capture.syncStatus === "synced" ? colors.brand[400] : colors.earth[400]}
-      />
+      {uploading ? (
+        <ActivityIndicator size="small" color={colors.brand[500]} />
+      ) : (
+        <MaterialCommunityIcons
+          name={capture.syncStatus === "synced" ? "cloud-check" : "cloud-clock-outline"}
+          size={18}
+          color={capture.syncStatus === "synced" ? colors.brand[400] : colors.earth[400]}
+        />
+      )}
     </TouchableOpacity>
   );
 }

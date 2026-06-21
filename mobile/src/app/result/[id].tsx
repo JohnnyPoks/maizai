@@ -7,6 +7,8 @@ import {
   Share,
   Alert,
   TouchableOpacity,
+  Modal,
+  Pressable,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Image } from "expo-image";
@@ -20,11 +22,16 @@ import { colors } from "@/theme/colors";
 import { strings } from "@/strings";
 import type { CaptureWithDetails, DiseaseClass } from "@/types/domain";
 
+function probColor(pct: number): string {
+  return pct >= 80 ? colors.brand[500] : pct >= 55 ? colors.alert.medium : colors.alert.high;
+}
+
 const DISEASE_CLASSES: DiseaseClass[] = ["Common_Rust", "Gray_Leaf_Spot", "Healthy", "Blight"];
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [detail, setDetail] = useState<CaptureWithDetails | null | undefined>(undefined);
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -85,13 +92,18 @@ export default function ResultScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Captured image */}
-        <Image
-          source={{ uri: detail.localUri }}
-          style={styles.image}
-          contentFit="cover"
-          transition={300}
-        />
+        {/* Captured image — tap to view the full, uncropped photo */}
+        <TouchableOpacity activeOpacity={0.9} onPress={() => setImageViewerOpen(true)}>
+          <Image
+            source={{ uri: detail.localUri }}
+            style={styles.image}
+            contentFit="cover"
+            transition={300}
+          />
+          <View style={styles.expandHint}>
+            <MaterialCommunityIcons name="arrow-expand" size={14} color="#fff" />
+          </View>
+        </TouchableOpacity>
 
         {/* Classification */}
         <View style={styles.section}>
@@ -106,21 +118,27 @@ export default function ResultScreen() {
           <ConfidenceBar value={classification.confidence} />
         </View>
 
-        {/* Probability distribution */}
+        {/* Probability distribution: name | bar | colored percentage */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>{strings.result.probabilitiesLabel}</Text>
           <View style={styles.probList}>
-            {DISEASE_CLASSES.map((cls) => (
-              <View key={cls} style={styles.probRow}>
-                <Text style={[styles.probLabel, cls === classification.diseaseClass && styles.probLabelActive]}>
-                  {strings.diseases[cls]}
-                </Text>
-                <ConfidenceBar
-                  value={classification.probabilities?.[cls] ?? 0}
-                  compact
-                />
-              </View>
-            ))}
+            {DISEASE_CLASSES.map((cls) => {
+              const value = classification.probabilities?.[cls] ?? 0;
+              const pct = Math.round(value * 100);
+              const color = probColor(pct);
+              const active = cls === classification.diseaseClass;
+              return (
+                <View key={cls} style={styles.probRow}>
+                  <Text style={[styles.probLabel, active && styles.probLabelActive]} numberOfLines={1}>
+                    {strings.diseases[cls]}
+                  </Text>
+                  <View style={styles.probTrack}>
+                    <View style={[styles.probFill, { width: `${pct}%` as `${number}%`, backgroundColor: color }]} />
+                  </View>
+                  <Text style={[styles.probPct, { color }]}>{pct}%</Text>
+                </View>
+              );
+            })}
           </View>
         </View>
 
@@ -161,6 +179,28 @@ export default function ResultScreen() {
           <Button label={strings.result.delete} onPress={handleDelete} variant="danger" />
         </View>
       </ScrollView>
+
+      {/* Full-screen image viewer */}
+      <Modal
+        visible={imageViewerOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageViewerOpen(false)}
+      >
+        <Pressable style={styles.viewerBackdrop} onPress={() => setImageViewerOpen(false)}>
+          <Image
+            source={{ uri: detail.localUri }}
+            style={styles.viewerImage}
+            contentFit="contain"
+          />
+          <TouchableOpacity
+            style={styles.viewerClose}
+            onPress={() => setImageViewerOpen(false)}
+          >
+            <MaterialCommunityIcons name="close" size={24} color="#fff" />
+          </TouchableOpacity>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -231,14 +271,34 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     backgroundColor: colors.surface.elevated,
   },
+  expandHint: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   section: { gap: 10 },
   sectionLabel: { fontSize: 11, fontWeight: "700", color: colors.surface.textMuted, letterSpacing: 0.5, textTransform: "uppercase" },
   diseaseRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   diseaseName: { fontSize: 22, fontWeight: "700", color: colors.surface.text },
-  probList: { gap: 8 },
+  probList: { gap: 10 },
   probRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  probLabel: { fontSize: 12, color: colors.surface.textMuted, width: 110 },
-  probLabelActive: { color: colors.surface.text, fontWeight: "600" },
+  probLabel: { fontSize: 12, color: colors.surface.textMuted, width: 96 },
+  probLabelActive: { color: colors.surface.text, fontWeight: "700" },
+  probTrack: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.surface.border,
+    overflow: "hidden",
+  },
+  probFill: { height: "100%", borderRadius: 4 },
+  probPct: { fontSize: 13, fontWeight: "700", minWidth: 40, textAlign: "right" },
   recBox: { borderRadius: 12, padding: 14, gap: 8 },
   recHeader: { flexDirection: "row", alignItems: "center", gap: 8 },
   recType: { fontSize: 13, fontWeight: "700", letterSpacing: 0.3 },
@@ -249,4 +309,22 @@ const styles = StyleSheet.create({
   actions: { gap: 10 },
   notFound: { flex: 1, alignItems: "center", justifyContent: "center", gap: 16, padding: 32 },
   notFoundText: { fontSize: 16, color: colors.surface.textMuted },
+  viewerBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.95)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewerImage: { width: "100%", height: "100%" },
+  viewerClose: {
+    position: "absolute",
+    top: 48,
+    right: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

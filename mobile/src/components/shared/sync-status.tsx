@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
 import { useSyncStore } from "@/stores/sync-store";
@@ -11,14 +11,24 @@ interface SyncStatusProps {
 export function SyncStatus({ onPress }: SyncStatusProps) {
   const { pendingCount, isSyncing } = useSyncStore();
 
+  // The badge only exists while there is work to show, and it disappears the
+  // moment the queue is empty and nothing is uploading.
   if (pendingCount === 0 && !isSyncing) return null;
+
+  const label = isSyncing
+    ? pendingCount > 0
+      ? `Uploading ${pendingCount}…`
+      : "Uploading…"
+    : strings.capture.pendingCount(pendingCount);
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.container} activeOpacity={0.7}>
-      <View style={[styles.dot, isSyncing && styles.dotSyncing]} />
-      <Text style={styles.label}>
-        {isSyncing ? "Syncing…" : strings.capture.pendingCount(pendingCount)}
-      </Text>
+      {isSyncing ? (
+        <ActivityIndicator size="small" color={colors.brand[500]} style={styles.spinner} />
+      ) : (
+        <View style={styles.dot} />
+      )}
+      <Text style={styles.label}>{label}</Text>
       <MaterialCommunityIcons
         name={isSyncing ? "cloud-sync" : "cloud-upload-outline"}
         size={14}
@@ -44,6 +54,6 @@ const styles = StyleSheet.create({
     borderRadius: 3.5,
     backgroundColor: colors.earth[400],
   },
-  dotSyncing: { backgroundColor: colors.brand[500] },
+  spinner: { width: 14, height: 14 },
   label: { fontSize: 11, fontWeight: "600", color: colors.surface.textMuted },
 });

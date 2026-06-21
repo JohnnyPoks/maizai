@@ -71,6 +71,25 @@ export const syncClassificationSchema = z.object({
   classifiedAt: z.string().datetime(),
 });
 
+// Consolidated capture sync: the mobile app sends the image, its on-device
+// classification and the locally generated recommendation in a single request.
+// The server performs the Cloudinary upload (so no upload credentials live on
+// the device) and persists everything atomically.
+export const syncCaptureSchema = z.object({
+  base64Image: z.string().min(1),
+  capturedAt: z.string().datetime(),
+  gpsLatitude: z.number().optional(),
+  gpsLongitude: z.number().optional(),
+  diseaseClass: z.nativeEnum(DiseaseClass),
+  confidence: z.number().min(0).max(1),
+  classifiedAt: z.string().datetime(),
+  recommendation: z.object({
+    adviceType: z.string().min(1).max(120),
+    adviceText: z.string().min(1).max(2000),
+    urgencyLevel: z.nativeEnum(UrgencyLevel),
+  }),
+});
+
 export const syncReadingSchema = z.object({
   nodeId: z.string().min(1),
   soilMoisture: z.number().min(0).max(100),

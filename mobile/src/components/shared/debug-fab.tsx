@@ -2,11 +2,13 @@ import { TouchableOpacity, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-// Only show the floating button during local development. In preview/release
-// builds debug is reached via Settings → tap the version five times, so the
-// button never floats over real content.
+// Show the floating debug button whenever debug mode is enabled — i.e. during
+// local development OR in preview builds where EXPO_PUBLIC_DEBUG_MODE is set.
+// This keeps the debug screen one tap away while testing real APKs. In a true
+// production release EXPO_PUBLIC_DEBUG_MODE is unset, so the button disappears.
 export function DebugFab() {
-  if (!__DEV__) return null;
+  const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
+  if (!debugEnabled) return null;
   return (
     <TouchableOpacity
       style={styles.fab}

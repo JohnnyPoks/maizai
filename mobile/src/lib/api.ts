@@ -4,10 +4,8 @@ import { getToken } from "./auth";
 import type {
   MobileSignInRequest,
   MobileSignInResponse,
-  SyncImageRequest,
-  SyncImageResponse,
-  SyncClassificationRequest,
-  SyncClassificationResponse,
+  SyncCaptureRequest,
+  SyncCaptureResponse,
   ApiRuleThreshold,
   AccessRequestBody,
 } from "@/types/api";
@@ -64,13 +62,11 @@ export const api = {
     await client.post("/api/feedback", body);
   },
 
-  async syncImage(body: SyncImageRequest): Promise<SyncImageResponse> {
-    const { data } = await client.post<SyncImageResponse>("/api/sync/images", body);
-    return data;
-  },
-
-  async syncClassification(body: SyncClassificationRequest): Promise<SyncClassificationResponse> {
-    const { data } = await client.post<SyncClassificationResponse>("/api/sync/classifications", body);
+  // Single round-trip: the server uploads the image to Cloudinary and persists
+  // the image, classification and recommendation together. The image is sent
+  // as base64 so no Cloudinary credentials live on the device.
+  async syncCapture(body: SyncCaptureRequest): Promise<SyncCaptureResponse> {
+    const { data } = await client.post<SyncCaptureResponse>("/api/sync/captures", body);
     return data;
   },
 

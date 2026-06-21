@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, Alert, Linking } from "react-native";
-import { router } from "expo-router";
+import { useState, useCallback } from "react";
+import { View, Text, StyleSheet, Alert, Linking, ActivityIndicator } from "react-native";
+import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCamera } from "@/hooks/use-camera";
 import { useInference } from "@/hooks/use-inference";
 import { ImageQualityError } from "@/lib/inference";
@@ -9,7 +10,6 @@ import { useSync } from "@/hooks/use-sync";
 import { CameraView } from "@/components/capture/camera-view";
 import { CaptureButton } from "@/components/capture/capture-button";
 import { SyncStatus } from "@/components/shared/sync-status";
-import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import {
   insertCapture,
@@ -29,8 +29,16 @@ const CONFIDENCE_THRESHOLD = 0.7;
 export default function CaptureScreen() {
   const { cameraRef, permission, requestPermission, takePicture } = useCamera();
   const { classify, isRunning } = useInference();
-  const { sync } = useSync();
+  const { sync, refreshPendingCount } = useSync();
   const [busy, setBusy] = useState(false);
+
+  // Keep the pending badge accurate whenever this screen regains focus
+  // (e.g. after saving a capture on the result screen).
+  useFocusEffect(
+    useCallback(() => {
+      refreshPendingCount();
+    }, [refreshPendingCount]),
+  );
 
   if (!permission) return null;
 
@@ -140,12 +148,16 @@ export default function CaptureScreen() {
       generatedLocally: true,
     });
 
-    // Fire background sync (non-blocking)
+    // Reflect the new pending capture in the badge straight away, then fire
+    // background sync (non-blocking).
+    refreshPendingCount();
     triggerBackgroundSync();
 
     // Navigate to result
     router.push(`/result/${captureId}`);
   }
+
+  const analysing = busy || isRunning;
 
   return (
     <View style={styles.container}>
@@ -159,12 +171,27 @@ export default function CaptureScreen() {
 
       {/* Bottom overlay */}
       <View style={styles.bottomOverlay}>
-        {busy || isRunning ? (
-          <Spinner message={strings.capture.analysing} />
-        ) : (
-          <CaptureButton onPress={handleCapture} disabled={busy} />
-        )}
+        <CaptureButton onPress={handleCapture} disabled={analysing} />
       </View>
+
+      {/* Full-screen analysing overlay — clearer, branded loading experience */}
+      {analysing && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingCard}>
+            <View style={styles.loadingIconWrap}>
+              <ActivityIndicator size="large" color={colors.brand[500]} />
+              <MaterialCommunityIcons
+                name="leaf"
+                size={22}
+                color={colors.brand[500]}
+                style={styles.loadingLeaf}
+              />
+            </View>
+            <Text style={styles.loadingTitle}>{strings.capture.analysing}</Text>
+            <Text style={styles.loadingHint}>Running on-device diagnosis</Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -205,4 +232,32 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingTop: 20,
   },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(15,42,28,0.55)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingCard: {
+    backgroundColor: colors.surface.background,
+    borderRadius: 20,
+    paddingVertical: 28,
+    paddingHorizontal: 36,
+    alignItems: "center",
+    gap: 10,
+    minWidth: 220,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 12,
+  },
+  loadingIconWrap: { width: 56, height: 56, alignItems: "center", justifyContent: "center" },
+  loadingLeaf: { position: "absolute" },
+  loadingTitle: { fontSize: 16, fontWeight: "700", color: colors.surface.text },
+  loadingHint: { fontSize: 13, color: colors.surface.textMuted },
 });

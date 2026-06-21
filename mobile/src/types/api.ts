@@ -21,28 +21,29 @@ export interface MobileSignInResponse {
   mustChangePassword: boolean;
 }
 
-export interface SyncImageRequest {
-  cloudinaryUrl: string;
-  cloudinaryId: string;
+// Server disease-class enum (Prisma). Mobile uses a Title_Case variant; the
+// two are bridged by upper-casing before sync (see api.syncCapture).
+export type ServerDiseaseClass = "HEALTHY" | "COMMON_RUST" | "GRAY_LEAF_SPOT" | "BLIGHT";
+
+export interface SyncCaptureRequest {
+  base64Image: string; // data URI or raw base64
   capturedAt: string; // ISO-8601
   gpsLatitude?: number;
   gpsLongitude?: number;
-}
-
-export interface SyncImageResponse {
-  id: string;
-}
-
-export interface SyncClassificationRequest {
-  imageId: string;
-  diseaseClass: DiseaseClass;
+  diseaseClass: ServerDiseaseClass;
   confidence: number;
-  inferenceSource: "ON_DEVICE";
   classifiedAt: string; // ISO-8601
+  recommendation: {
+    adviceType: string;
+    adviceText: string;
+    urgencyLevel: UrgencyLevel;
+  };
 }
 
-export interface SyncClassificationResponse {
-  id: string;
+export interface SyncCaptureResponse {
+  imageId: string;
+  classificationId?: string;
+  cloudinaryUrl: string;
 }
 
 export interface ApiRuleThreshold {
@@ -55,12 +56,6 @@ export interface ApiRuleThreshold {
   adviceType: string;
   adviceText: string;
   active: boolean;
-}
-
-export interface CloudinaryUploadResponse {
-  secure_url: string;
-  public_id: string;
-  asset_id: string;
 }
 
 export interface AccessRequestBody {
