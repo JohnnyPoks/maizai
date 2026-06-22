@@ -72,8 +72,8 @@ export default function SettingsScreen() {
   const tapCount = useRef(0);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onVersionTap = useCallback(() => {
-    const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
-    if (!debugEnabled) return;
+    // The 5-tap is itself the hidden access gate, so it works in every build
+    // (including production) — letting the developer reach logs when needed.
     tapCount.current += 1;
     if (tapTimer.current) clearTimeout(tapTimer.current);
     if (tapCount.current >= 5) {

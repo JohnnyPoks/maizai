@@ -1,10 +1,10 @@
-import { Redirect } from "expo-router";
 import { Stack } from "expo-router";
 
-const debugEnabled = __DEV__ || process.env.EXPO_PUBLIC_DEBUG_MODE === "true";
-
+// The debug screen is reachable only via the hidden 5-tap on the version number
+// (and the dev-only floating button). That tap is the access gate, so we no
+// longer redirect away when EXPO_PUBLIC_DEBUG_MODE is off — this lets the
+// developer reach logs/export even in a production build if they know the tap.
 export default function DebugLayout() {
-  if (!debugEnabled) return <Redirect href="/(tabs)/capture" />;
   return (
     <Stack
       screenOptions={{

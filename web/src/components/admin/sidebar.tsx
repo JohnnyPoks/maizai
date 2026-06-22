@@ -99,7 +99,11 @@ export function Sidebar({ role }: { role: string }) {
       )}
     >
       <div className="flex h-14 items-center border-b border-brand-100 px-3 justify-between">
-        {!collapsed && <Logo size="sm" />}
+        {!collapsed && (
+          <Link href="/" title="Back to home" className="rounded-md hover:opacity-80 transition-opacity">
+            <Logo size="sm" />
+          </Link>
+        )}
         <button
           onClick={toggleCollapse}
           className={cn(
@@ -133,7 +137,9 @@ export function MobileSidebarTrigger({ role }: { role: string }) {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="w-56 p-0 border-r border-brand-100">
           <div className="flex h-14 items-center border-b border-brand-100 px-4">
-            <Logo size="sm" />
+            <Link href="/" onClick={() => setOpen(false)} title="Back to home">
+              <Logo size="sm" />
+            </Link>
           </div>
           <NavLinks collapsed={false} role={role} onClose={() => setOpen(false)} />
         </SheetContent>

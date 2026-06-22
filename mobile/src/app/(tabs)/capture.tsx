@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from "react";
 import { View, Text, StyleSheet, Alert, Linking, ActivityIndicator, TouchableOpacity } from "react-native";
 import { router, useFocusEffect } from "expo-router";
+import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -32,18 +33,29 @@ export default function CaptureScreen() {
   const { classify, isRunning } = useInference();
   const { sync, refreshPendingCount } = useSync();
   const [busy, setBusy] = useState(false);
+  // The just-captured photo, shown as a still freeze-frame while we analyse it
+  // (a more natural camera experience than the frame vanishing instantly).
+  const [capturedUri, setCapturedUri] = useState<string | null>(null);
   // Set when the model rejects the image as "not a maize leaf"; drives the
   // dedicated rejection screen instead of the normal result flow.
   const [rejected, setRejected] = useState<{ uri: string; result: ClassificationResult } | null>(null);
   // Guards re-entry during the capture/pick phase without showing the overlay
   // (the overlay should only appear once we actually have an image to analyse).
   const inFlight = useRef(false);
+  // Whether this screen is focused, derived from the focus/blur lifecycle.
+  // The camera only mounts while focused, so it is released on blur and
+  // remounts fresh on return — fixing the frozen/black camera after navigation.
+  const [isFocused, setIsFocused] = useState(true);
 
-  // Keep the pending badge accurate whenever this screen regains focus
-  // (e.g. after saving a capture on the result screen).
   useFocusEffect(
     useCallback(() => {
+      setIsFocused(true);
       refreshPendingCount();
+      // Drop any stale freeze-frame/rejection so the live camera resumes.
+      setCapturedUri(null);
+      setRejected(null);
+      setBusy(false);
+      return () => setIsFocused(false);
     }, [refreshPendingCount]),
   );
 
@@ -72,16 +84,19 @@ export default function CaptureScreen() {
     if (inFlight.current) return;
     inFlight.current = true;
     try {
-      // Take the photo first (this is when the shutter sound/animation plays);
-      // only then show the analysing overlay, so loading and capture stay in sync.
+      // Take the photo first (this is when the shutter sound/animation plays).
       const uri = await takePicture();
       if (!uri) {
         Alert.alert("Camera", "Could not capture an image. Please try again.");
         return;
       }
+      // Freeze the captured frame on screen, then show the analysing overlay,
+      // so loading and capture stay in sync and the user sees what they shot.
+      setCapturedUri(uri);
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setBusy(true);
-      await analyseAndSave(uri);
+      const outcome = await analyseAndSave(uri);
+      if (outcome === "stay") setCapturedUri(null); // resume the live camera
     } finally {
       setBusy(false);
       inFlight.current = false;
@@ -99,15 +114,20 @@ export default function CaptureScreen() {
         quality: 1,
       });
       if (result.canceled || !result.assets?.[0]?.uri) return;
+      const uri = result.assets[0].uri;
+      setCapturedUri(uri);
       setBusy(true);
-      await analyseAndSave(result.assets[0].uri);
+      const outcome = await analyseAndSave(uri);
+      if (outcome === "stay") setCapturedUri(null);
     } finally {
       setBusy(false);
       inFlight.current = false;
     }
   }
 
-  async function analyseAndSave(uri: string) {
+  type Outcome = "navigated" | "rejected" | "stay";
+
+  async function analyseAndSave(uri: string): Promise<Outcome> {
     let result;
     try {
       result = await classify(uri);
@@ -115,14 +135,14 @@ export default function CaptureScreen() {
       const msg = err instanceof Error ? err.message : String(err);
       dlogError("capture", `Classification failed: ${msg}`);
       Alert.alert("Analysis failed", msg);
-      return;
+      return "stay";
     }
 
     // The model itself rejects non-maize inputs via the Not_Maize class —
     // route those to the dedicated rejection screen, do not save by default.
     if (result.diseaseClass === "Not_Maize") {
       setRejected({ uri, result });
-      return;
+      return "rejected";
     }
 
     // Low-confidence guard: don't present or save an unclear result.
@@ -131,7 +151,7 @@ export default function CaptureScreen() {
         "Result unclear",
         "We could not confidently identify the leaf condition. Please capture again with the leaf centred and well-lit.",
       );
-      return;
+      return "stay";
     }
 
     const captureId = await persistCapture(uri, result, false);
@@ -143,6 +163,7 @@ export default function CaptureScreen() {
 
     // Navigate to result
     router.push(`/result/${captureId}`);
+    return "navigated";
   }
 
   // Writes a capture + classification + recommendation to SQLite. `wasRejected`
@@ -204,13 +225,19 @@ export default function CaptureScreen() {
     if (!rejected) return;
     await persistCapture(rejected.uri, rejected.result, true);
     setRejected(null); // back to the camera; rejected records are not synced
+    setCapturedUri(null);
   }
 
   const analysing = busy || isRunning;
 
   return (
     <View style={styles.container}>
-      <CameraView cameraRef={cameraRef} />
+      <CameraView cameraRef={cameraRef} active={isFocused && !capturedUri && !rejected} />
+
+      {/* Freeze-frame: show the captured photo while analysing / on rejection */}
+      {capturedUri && (
+        <Image source={{ uri: capturedUri }} style={StyleSheet.absoluteFill} contentFit="cover" />
+      )}
 
       {/* Top overlay */}
       <View style={styles.topOverlay}>
@@ -267,7 +294,11 @@ export default function CaptureScreen() {
               capturing a single maize leaf with good lighting, with the leaf filling
               most of the frame, then try again.
             </Text>
-            <Button label="Try again" onPress={() => setRejected(null)} style={{ alignSelf: "stretch" }} />
+            <Button
+              label="Try again"
+              onPress={() => { setRejected(null); setCapturedUri(null); }}
+              style={{ alignSelf: "stretch" }}
+            />
             <TouchableOpacity onPress={saveRejectedAnyway} accessibilityRole="button">
               <Text style={styles.rejectLink}>Save anyway to history</Text>
             </TouchableOpacity>
