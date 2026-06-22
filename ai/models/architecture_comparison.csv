@@ -1,0 +1,4 @@
+Architecture,Test accuracy,Macro F1,Params (M),Training time (min),"Inference (ms, CPU)"
+MobileNetV2,0.9575,0.9395,2.42,3.7,69.4
+MobileNetV3Small,0.9599,0.9414,1.01,1.8,92.4
+EfficientNetLite0,0.9693,0.956,4.21,5.7,74.4

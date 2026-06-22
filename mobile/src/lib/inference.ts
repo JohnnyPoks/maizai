@@ -6,23 +6,18 @@ import { Asset } from "expo-asset";
 // jpeg-js is a pure-JS JPEG decoder — no native bindings required
 import jpegJs from "jpeg-js";
 import { dlog, dlogWarn, dlogError } from "./debug-store";
-import { assessLeafImage } from "./image-quality";
-
-/** Thrown when the captured image does not look like a maize leaf. */
-export class ImageQualityError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "ImageQualityError";
-  }
-}
 
 let modelInstance: TensorflowModel | null = null;
 
+// Order must match the model's output tensor exactly (five-class v2 model).
+// The fifth class, Not_Maize, lets the model reject non-maize inputs itself —
+// there is no longer a heuristic pre-inference quality gate.
 export const DISEASE_CLASSES = [
   "Common_Rust",
   "Gray_Leaf_Spot",
   "Healthy",
-  "Blight",
+  "Northern_Leaf_Blight",
+  "Not_Maize",
 ] as const;
 
 export type DiseaseClass = (typeof DISEASE_CLASSES)[number];
@@ -101,13 +96,6 @@ export async function classifyLeaf(imageUri: string): Promise<ClassificationResu
   const byteCount = INPUT_SIZE * INPUT_SIZE * 3;
   if (rgb.length < byteCount) {
     throw new Error(`Decoded image too small: got ${rgb.length} bytes, expected ${byteCount}.`);
-  }
-
-  // Step 2b: Quality gate — reject obvious non-leaf inputs before inference.
-  const quality = assessLeafImage(rgb, INPUT_SIZE * INPUT_SIZE);
-  if (!quality.ok) {
-    dlog("inference", "Rejected by quality gate (not a maize leaf)");
-    throw new ImageQualityError(quality.reason ?? "Could not detect a maize leaf.");
   }
 
   // Step 3: Build the input tensor in whatever dtype the model expects.

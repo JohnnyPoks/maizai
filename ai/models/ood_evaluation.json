@@ -1,0 +1,12 @@
+{
+  "n_ood_test": 97,
+  "rejection_rate": 1.0,
+  "mean_confidence": 0.992419421672821,
+  "misclassification_breakdown": {
+    "Common_Rust": 0,
+    "Gray_Leaf_Spot": 0,
+    "Healthy": 0,
+    "Northern_Leaf_Blight": 0,
+    "Not_Maize": 97
+  }
+}

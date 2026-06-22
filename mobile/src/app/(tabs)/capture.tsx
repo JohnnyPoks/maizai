@@ -6,7 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCamera } from "@/hooks/use-camera";
 import { useInference } from "@/hooks/use-inference";
-import { ImageQualityError } from "@/lib/inference";
+import type { ClassificationResult } from "@/lib/inference";
 import { useSync } from "@/hooks/use-sync";
 import { CameraView } from "@/components/capture/camera-view";
 import { CaptureButton } from "@/components/capture/capture-button";
@@ -32,6 +32,9 @@ export default function CaptureScreen() {
   const { classify, isRunning } = useInference();
   const { sync, refreshPendingCount } = useSync();
   const [busy, setBusy] = useState(false);
+  // Set when the model rejects the image as "not a maize leaf"; drives the
+  // dedicated rejection screen instead of the normal result flow.
+  const [rejected, setRejected] = useState<{ uri: string; result: ClassificationResult } | null>(null);
   // Guards re-entry during the capture/pick phase without showing the overlay
   // (the overlay should only appear once we actually have an image to analyse).
   const inFlight = useRef(false);
@@ -109,13 +112,16 @@ export default function CaptureScreen() {
     try {
       result = await classify(uri);
     } catch (err) {
-      if (err instanceof ImageQualityError) {
-        Alert.alert("Capture rejected", err.message);
-        return;
-      }
       const msg = err instanceof Error ? err.message : String(err);
       dlogError("capture", `Classification failed: ${msg}`);
       Alert.alert("Analysis failed", msg);
+      return;
+    }
+
+    // The model itself rejects non-maize inputs via the Not_Maize class —
+    // route those to the dedicated rejection screen, do not save by default.
+    if (result.diseaseClass === "Not_Maize") {
+      setRejected({ uri, result });
       return;
     }
 
@@ -128,7 +134,24 @@ export default function CaptureScreen() {
       return;
     }
 
-    // Persist to SQLite
+    const captureId = await persistCapture(uri, result, false);
+
+    // Reflect the new pending capture in the badge straight away, then fire
+    // background sync (non-blocking).
+    refreshPendingCount();
+    triggerBackgroundSync();
+
+    // Navigate to result
+    router.push(`/result/${captureId}`);
+  }
+
+  // Writes a capture + classification + recommendation to SQLite. `wasRejected`
+  // marks "save anyway" debug records, which are kept local and never synced.
+  async function persistCapture(
+    uri: string,
+    result: ClassificationResult,
+    wasRejected: boolean,
+  ): Promise<string> {
     const captureId = await generateId();
     const classificationId = await generateId();
     const recommendationId = await generateId();
@@ -144,6 +167,7 @@ export default function CaptureScreen() {
       gpsLatitude: coords?.latitude ?? null,
       gpsLongitude: coords?.longitude ?? null,
       syncStatus: "pending",
+      wasRejected,
     });
 
     insertClassification({
@@ -173,13 +197,13 @@ export default function CaptureScreen() {
       generatedLocally: true,
     });
 
-    // Reflect the new pending capture in the badge straight away, then fire
-    // background sync (non-blocking).
-    refreshPendingCount();
-    triggerBackgroundSync();
+    return captureId;
+  }
 
-    // Navigate to result
-    router.push(`/result/${captureId}`);
+  async function saveRejectedAnyway() {
+    if (!rejected) return;
+    await persistCapture(rejected.uri, rejected.result, true);
+    setRejected(null); // back to the camera; rejected records are not synced
   }
 
   const analysing = busy || isRunning;
@@ -228,6 +252,25 @@ export default function CaptureScreen() {
             </View>
             <Text style={styles.loadingTitle}>{strings.capture.analysing}</Text>
             <Text style={styles.loadingHint}>Running on-device diagnosis</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Rejection screen — the model did not detect a maize leaf */}
+      {rejected && (
+        <View style={styles.rejectOverlay}>
+          <View style={styles.rejectCard}>
+            <MaterialCommunityIcons name="leaf-off" size={40} color={colors.alert.medium} />
+            <Text style={styles.rejectTitle}>No maize leaf detected</Text>
+            <Text style={styles.rejectBody}>
+              We could not detect a maize leaf in this photo. Please make sure you are
+              capturing a single maize leaf with good lighting, with the leaf filling
+              most of the frame, then try again.
+            </Text>
+            <Button label="Try again" onPress={() => setRejected(null)} style={{ alignSelf: "stretch" }} />
+            <TouchableOpacity onPress={saveRejectedAnyway} accessibilityRole="button">
+              <Text style={styles.rejectLink}>Save anyway to history</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -317,4 +360,28 @@ const styles = StyleSheet.create({
   loadingLeaf: { position: "absolute" },
   loadingTitle: { fontSize: 16, fontWeight: "700", color: colors.surface.text },
   loadingHint: { fontSize: 13, color: colors.surface.textMuted },
+  rejectOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(15,42,28,0.75)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  rejectCard: {
+    backgroundColor: colors.surface.background,
+    borderRadius: 20,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    gap: 14,
+    width: "100%",
+    maxWidth: 360,
+  },
+  rejectTitle: { fontSize: 19, fontWeight: "700", color: colors.surface.text, textAlign: "center" },
+  rejectBody: { fontSize: 14, color: colors.surface.textMuted, textAlign: "center", lineHeight: 20 },
+  rejectLink: { fontSize: 13, color: colors.surface.textMuted, textDecorationLine: "underline", paddingVertical: 4 },
 });

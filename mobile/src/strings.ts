@@ -105,7 +105,8 @@ export const strings = {
     Healthy: "Healthy",
     Common_Rust: "Common Rust",
     Gray_Leaf_Spot: "Gray Leaf Spot",
-    Blight: "Blight",
+    Northern_Leaf_Blight: "Northern Leaf Blight",
+    Not_Maize: "Not a maize leaf",
   } as Record<string, string>,
   urgency: {
     LOW: "Low",

@@ -21,8 +21,12 @@ export interface SyncResult {
   failed: number;
 }
 
-/** Mobile uses Title_Case disease classes; the server (Prisma) uses UPPER_CASE. */
+// Mobile uses Title_Case disease classes; the server (Prisma) enum is
+// UPPER_CASE and still uses the short name BLIGHT, so map the canonical
+// Northern_Leaf_Blight onto it. Not_Maize is never synced (rejected captures
+// are excluded from the pending queue), so it has no server mapping.
 function toServerDiseaseClass(c: DiseaseClass): ServerDiseaseClass {
+  if (c === "Northern_Leaf_Blight") return "BLIGHT";
   return c.toUpperCase() as ServerDiseaseClass;
 }
 

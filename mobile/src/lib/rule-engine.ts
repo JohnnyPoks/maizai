@@ -33,7 +33,7 @@ const DEFAULT_THRESHOLDS: ApiRuleThreshold[] = [
     active: true,
   },
   {
-    id: "d3", diseaseClass: "Blight", parameter: "ambientTemperature",
+    id: "d3", diseaseClass: "Northern_Leaf_Blight", parameter: "ambientTemperature",
     minValue: 25, maxValue: 35, urgencyLevel: "HIGH",
     adviceType: "REMOVE", adviceText: "Remove and destroy severely blighted plants to prevent further spread. Do not compost.",
     active: true,
@@ -51,7 +51,7 @@ const DEFAULT_THRESHOLDS: ApiRuleThreshold[] = [
     active: true,
   },
   {
-    id: "d6", diseaseClass: "Blight", parameter: "soilMoisture",
+    id: "d6", diseaseClass: "Northern_Leaf_Blight", parameter: "soilMoisture",
     minValue: 80, maxValue: null, urgencyLevel: "HIGH",
     adviceType: "DRAIN", adviceText: "Waterlogged soil promotes blight. Improve drainage immediately and apply copper-based bactericide.",
     active: true,
@@ -75,10 +75,18 @@ const FALLBACK_RECOMMENDATIONS: Record<DiseaseClass, Recommendation> = {
     adviceText: "Gray Leaf Spot detected. Apply strobilurin fungicide and avoid overhead irrigation.",
     urgencyLevel: "MEDIUM",
   },
-  Blight: {
+  Northern_Leaf_Blight: {
     adviceType: "REMOVE",
-    adviceText: "Blight detected. Remove affected material and apply copper-based bactericide.",
+    adviceText: "Northern Leaf Blight detected. Remove affected material and apply copper-based bactericide.",
     urgencyLevel: "HIGH",
+  },
+  // Never displayed — the capture flow short-circuits Not_Maize to the
+  // dedicated rejection screen — but defined so the rule engine handles all
+  // five classes without breaking.
+  Not_Maize: {
+    adviceType: "rejected",
+    adviceText: "No maize leaf detected in the captured image.",
+    urgencyLevel: "LOW",
   },
 };
 
@@ -99,6 +107,12 @@ export function generateRecommendation(
   sensorContext: SensorContext | null,
   thresholds: ApiRuleThreshold[],
 ): Recommendation {
+  // Guard: a Not_Maize prediction is a rejection, never a diagnosis. The
+  // capture flow handles it before reaching here, but keep the engine total.
+  if (classification.diseaseClass === "Not_Maize") {
+    return FALLBACK_RECOMMENDATIONS.Not_Maize;
+  }
+
   if (classification.diseaseClass === "Healthy") {
     return FALLBACK_RECOMMENDATIONS.Healthy;
   }

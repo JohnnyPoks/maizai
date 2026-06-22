@@ -47,13 +47,15 @@ const urgencyText: Record<UrgencyLevel, string> = {
 
 function diseaseBg(d: DiseaseClass): string {
   if (d === "Healthy") return colors.brand[50];
-  if (d === "Blight") return "#fff1ee";
+  if (d === "Not_Maize") return colors.surface.elevated;
+  if (d === "Northern_Leaf_Blight") return "#fff1ee";
   return "#fffbeb";
 }
 
 function diseaseText(d: DiseaseClass): string {
   if (d === "Healthy") return colors.brand[700];
-  if (d === "Blight") return colors.alert.high;
+  if (d === "Not_Maize") return colors.surface.textMuted;
+  if (d === "Northern_Leaf_Blight") return colors.alert.high;
   return colors.alert.medium;
 }
 

@@ -17,6 +17,15 @@ on:
         description: "Publish a GitHub Release with the APK"
         type: boolean
         default: true
+  # Auto-build whenever the mobile app source or the bundled model changes on
+  # main. GitHub Actions is free/unlimited for public repos, so every such push
+  # produces a fresh APK + Release that the website download button points at.
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - "ai/models/maize_classifier.tflite"
+      - ".github/workflows/build-apk.yml"
 
 permissions:
   contents: write
@@ -34,7 +43,9 @@ jobs:
       # the device talks to the server, which holds the Cloudinary/DB credentials.
       EXPO_PUBLIC_API_URL: https://maizai.vercel.app
       EXPO_PUBLIC_SUPPORT_EMAIL: johnpokam95@gmail.com
-      EXPO_PUBLIC_DEBUG_MODE: ${{ inputs.debug_mode }}
+      # Debug tools on by default (incl. push builds, while still testing);
+      # only a manual run that unticks "debug_mode" turns them off.
+      EXPO_PUBLIC_DEBUG_MODE: ${{ inputs.debug_mode == false && 'false' || 'true' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -85,7 +96,8 @@ jobs:
           retention-days: 14
 
       - name: Publish GitHub Release
-        if: ${{ inputs.publish_release }}
+        # Always publish on push; on a manual run, honour the publish_release input.
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.publish_release }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.ver.outputs.version }}-build.${{ github.run_number }}

@@ -26,7 +26,13 @@ function probColor(pct: number): string {
   return pct >= 80 ? colors.brand[500] : pct >= 55 ? colors.alert.medium : colors.alert.high;
 }
 
-const DISEASE_CLASSES: DiseaseClass[] = ["Common_Rust", "Gray_Leaf_Spot", "Healthy", "Blight"];
+const DISEASE_CLASSES: DiseaseClass[] = [
+  "Common_Rust",
+  "Gray_Leaf_Spot",
+  "Healthy",
+  "Northern_Leaf_Blight",
+  "Not_Maize",
+];
 
 export default function ResultScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

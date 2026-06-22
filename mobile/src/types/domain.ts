@@ -1,4 +1,9 @@
-export type DiseaseClass = "Healthy" | "Common_Rust" | "Gray_Leaf_Spot" | "Blight";
+export type DiseaseClass =
+  | "Healthy"
+  | "Common_Rust"
+  | "Gray_Leaf_Spot"
+  | "Northern_Leaf_Blight"
+  | "Not_Maize";
 export type UrgencyLevel = "LOW" | "MEDIUM" | "HIGH";
 export type SyncStatus = "pending" | "synced" | "failed";
 export type InferenceSource = "ON_DEVICE";
@@ -15,6 +20,9 @@ export interface Capture {
   uploadedAt: number | null;
   syncAttempts: number;
   lastSyncError: string | null;
+  // True when saved despite the model rejecting it as "not a maize leaf".
+  // These are kept local (debug only) and never synced.
+  wasRejected: boolean;
 }
 
 export interface Classification {

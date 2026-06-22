@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS captures (
   sync_status TEXT NOT NULL DEFAULT 'pending',
   uploaded_at INTEGER,
   sync_attempts INTEGER NOT NULL DEFAULT 0,
-  last_sync_error TEXT
+  last_sync_error TEXT,
+  was_rejected INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS classifications (
@@ -64,28 +65,35 @@ export function initDatabase(): void {
   } catch {
     // Column already exists — ignore.
   }
+  try {
+    db.execSync("ALTER TABLE captures ADD COLUMN was_rejected INTEGER NOT NULL DEFAULT 0");
+  } catch {
+    // Column already exists — ignore.
+  }
 }
 
 // ── Captures ─────────────────────────────────────────────────────────────────
 
 export function insertCapture(capture: Omit<Capture, "syncAttempts" | "lastSyncError" | "uploadedAt" | "cloudinaryUrl" | "cloudinaryId">): void {
   db.runSync(
-    `INSERT INTO captures (id, local_uri, captured_at, gps_latitude, gps_longitude, sync_status)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO captures (id, local_uri, captured_at, gps_latitude, gps_longitude, sync_status, was_rejected)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     capture.id,
     capture.localUri,
     capture.capturedAt,
     capture.gpsLatitude ?? null,
     capture.gpsLongitude ?? null,
     capture.syncStatus,
+    capture.wasRejected ? 1 : 0,
   );
 }
 
 export function getPendingCaptures(): Capture[] {
-  // Retry failed uploads too, not just never-attempted ones.
+  // Retry failed uploads too, not just never-attempted ones. Rejected
+  // ("not a maize leaf") captures are debug-only and never synced.
   return db
     .getAllSync<Record<string, unknown>>(
-      `SELECT * FROM captures WHERE sync_status IN ('pending', 'failed') ORDER BY captured_at ASC LIMIT 20`,
+      `SELECT * FROM captures WHERE sync_status IN ('pending', 'failed') AND was_rejected = 0 ORDER BY captured_at ASC LIMIT 20`,
     )
     .map(rowToCapture);
 }
@@ -214,6 +222,7 @@ function rowToCapture(row: Record<string, unknown>): Capture {
     uploadedAt: (row.uploaded_at as number | null) ?? null,
     syncAttempts: row.sync_attempts as number,
     lastSyncError: (row.last_sync_error as string | null) ?? null,
+    wasRejected: (row.was_rejected as number | null) === 1,
   };
 }
 
