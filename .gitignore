@@ -71,10 +71,7 @@ firmware/.vscode/
 CLAUDE.md
 
 # Internal project documentation & scratch — kept local, not published
-image*.png
 PROJECT_STATE.md
-PROJECT_DOCUMENTATION.md
-*.pdf
 
 # IDE
 .idea/
